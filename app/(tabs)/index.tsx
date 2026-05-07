@@ -5,9 +5,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 import LocationInput from '@/components/LocationInput';
-import BusCard from '@/components/BusCard';
 import SOSButton from '@/components/SOSButton';
-import { FEEDBACK_REASONS, LANDMARK_HINTS, MOCK_DEPARTURES, MOCK_MULTI_LEG_TRIP, MOCK_ROUTES, MOCK_TRIP_HISTORY, MOCK_TRIP_STAGES, MOCK_VEHICLES, OFFLINE_CACHE_STATUS, POPULAR_PLACES, fuzzyPlaceMatch } from '@/constants/mock-data';
+import { DIRECT_ROUTE_OPTIONS, FEEDBACK_REASONS, LANDMARK_HINTS, MULTI_LEG_ROUTE_OPTIONS, MOCK_TRIP_HISTORY, MOCK_TRIP_STAGES, OFFLINE_CACHE_STATUS, POPULAR_PLACES, RouteOption, findRouteOptions, fuzzyPlaceMatch } from '@/constants/mock-data';
 import { getFavourites, getRecentSearches, cacheRecentSearches } from '@/lib/offline';
 
 export default function HomeScreen() {
@@ -18,7 +17,7 @@ export default function HomeScreen() {
   const [to, setTo] = useState('');
   const [favourites, setFavourites] = useState<string[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [searchResults, setSearchResults] = useState<typeof MOCK_DEPARTURES>([]);
+  const [routeResults, setRouteResults] = useState<RouteOption[]>([]);
   const [searched, setSearched] = useState(false);
   const [tripStage] = useState(1);
 
@@ -32,7 +31,7 @@ export default function HomeScreen() {
     if (params.to) {
       setTo(params.to);
       if (params.search === 'true') {
-        handleSearch(params.to);
+        handleSearch(params.to, params.from || from);
       }
     }
   }, [params.from, params.to, params.search]);
@@ -42,16 +41,13 @@ export default function HomeScreen() {
     return POPULAR_PLACES.filter(place => fuzzyPlaceMatch(q, place)).slice(0, 5);
   }, [to]);
 
-  const handleSearch = (destination = to) => {
-    if (!destination.trim()) return;
-    const results = MOCK_DEPARTURES.filter(d => {
-      const route = MOCK_ROUTES.find(r => r.id === d.route_id);
-      if (!route) return false;
-      return fuzzyPlaceMatch(destination, route.to) || fuzzyPlaceMatch(destination, route.from) || fuzzyPlaceMatch(destination, route.name);
-    });
-    setSearchResults(results);
+  const handleSearch = (destination = to, origin = from) => {
+    if (!destination.trim() && !origin.trim()) return;
+    const results = findRouteOptions(origin, destination);
+    setRouteResults(results);
     setSearched(true);
-    const updated = [destination, ...recentSearches.filter(s => s !== destination)].slice(0, 10);
+    const searchLabel = origin.trim() ? `${origin} to ${destination}` : destination;
+    const updated = [searchLabel, ...recentSearches.filter(s => s !== searchLabel)].slice(0, 10);
     setRecentSearches(updated);
     cacheRecentSearches(updated);
   };
@@ -59,7 +55,7 @@ export default function HomeScreen() {
   const repeatTrip = (fromPlace: string, toPlace: string) => {
     setFrom(fromPlace);
     setTo(toPlace);
-    handleSearch(toPlace);
+    handleSearch(toPlace, fromPlace);
   };
 
   return (
@@ -77,15 +73,15 @@ export default function HomeScreen() {
         {to.length > 0 && suggestions.length > 0 && (
           <View style={styles.suggestionWrap}>
             {suggestions.map(place => (
-              <TouchableOpacity key={place} style={styles.suggestionChip} onPress={() => { setTo(place); handleSearch(place); }}>
+              <TouchableOpacity key={place} style={styles.suggestionChip} onPress={() => { setTo(place); handleSearch(place, from); }}>
                 <Text style={styles.suggestionText}>{place}</Text>
               </TouchableOpacity>
             ))}
           </View>
         )}
-        <TouchableOpacity style={styles.searchButton} onPress={() => handleSearch()}>
+        <TouchableOpacity style={styles.searchButton} onPress={() => handleSearch(to, from)}>
           <Ionicons name="search" size={20} color="#FFF" />
-          <Text style={styles.searchButtonText}>Search Routes</Text>
+          <Text style={styles.searchButtonText}>Find Route</Text>
         </TouchableOpacity>
       </View>
 
@@ -115,7 +111,7 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Popular Routes</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
           {[...favourites, ...POPULAR_PLACES.slice(0, 5)].filter((v, i, arr) => arr.indexOf(v) === i).map(place => (
-            <TouchableOpacity key={place} style={styles.chip} onPress={() => { setTo(place); handleSearch(place); }}>
+            <TouchableOpacity key={place} style={styles.chip} onPress={() => { setTo(place); handleSearch(place, from); }}>
               <Text style={styles.chipText}>{place}</Text>
             </TouchableOpacity>
           ))}
@@ -136,51 +132,27 @@ export default function HomeScreen() {
 
       {searched && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{searchResults.length > 0 ? `${searchResults.length} Departures Found` : 'No routes found'}</Text>
-          {searchResults.length === 0 ? (
+          <Text style={styles.sectionTitle}>{routeResults.length > 0 ? `${routeResults.length} Routes Found` : 'No routes found'}</Text>
+          {routeResults.length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons name="bus-outline" size={48} color={Colors.border} />
-              <Text style={styles.emptyTitle}>Try a landmark or rank name</Text>
-              <Text style={styles.emptyMsg}>Examples: UB, Main Mall, Airport Junction, Station.</Text>
+              <Text style={styles.emptyTitle}>Try one of the demo routes</Text>
+              <Text style={styles.emptyMsg}>Examples: Block 6 to UB, Main Mall to UB, Phakalane to CBD.</Text>
             </View>
           ) : (
-            searchResults.map(dep => {
-              const vehicle = MOCK_VEHICLES.find(v => v.id === dep.vehicle_id);
-              const route = MOCK_ROUTES.find(r => r.id === dep.route_id);
-              if (!vehicle || !route) return null;
-              return (
-                <BusCard
-                  key={dep.id}
-                  vehicleType={vehicle.type}
-                  plate={`${vehicle.plate} - ${vehicle.colour}`}
-                  from={route.from}
-                  to={route.to}
-                  departureTime={`${dep.departure_time} (ETA ${vehicle.eta_minutes} min)`}
-                  arrivalTime={dep.arrival_time}
-                  seatsAvailable={vehicle.seats_available}
-                  totalSeats={vehicle.total_seats}
-                  fare={dep.fare}
-                  traffic={route.traffic}
-                  onPress={() => router.push(`/booking/${vehicle.id}`)}
-                />
-              );
-            })
+            routeResults.map(route => <RouteResultCard key={route.id} route={route} />)
           )}
         </View>
       )}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Multi-leg</Text>
-        {MOCK_MULTI_LEG_TRIP.map(leg => (
-          <View key={leg.id} style={styles.stepRow}>
-            <Ionicons name="swap-horizontal-outline" size={18} color={Colors.primary} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.stepTitle}>{leg.route}</Text>
-              <Text style={styles.stepText}>{leg.instruction} - wait {leg.wait}</Text>
-            </View>
-            <Text style={styles.stepFare}>{leg.fare ? `BWP ${leg.fare.toFixed(2)}` : 'Walk'}</Text>
-          </View>
-        ))}
+        <Text style={styles.sectionTitle}>Multi-leg Route Examples</Text>
+        {MULTI_LEG_ROUTE_OPTIONS.slice(0, 3).map(route => <RouteResultCard key={route.id} route={route} compact />)}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Direct Routes</Text>
+        {DIRECT_ROUTE_OPTIONS.slice(0, 3).map(route => <RouteResultCard key={route.id} route={route} compact />)}
       </View>
 
       <View style={styles.section}>
@@ -213,6 +185,38 @@ export default function HomeScreen() {
         <SOSButton />
       </View>
     </ScrollView>
+  );
+}
+
+function RouteResultCard({ route, compact = false }: { route: RouteOption; compact?: boolean }) {
+  const [expanded, setExpanded] = useState(!compact);
+
+  return (
+    <View style={styles.routeResultCard}>
+      <TouchableOpacity style={styles.routeResultHeader} onPress={() => setExpanded(!expanded)}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.routeResultTitle}>{route.title}</Text>
+          <Text style={styles.routeResultMeta}>{route.type === 'multi-leg' ? 'Multi-leg' : 'Direct'} - P{route.totalFare.toFixed(2)} - {route.totalTime} min</Text>
+        </View>
+        <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={Colors.textSecondary} />
+      </TouchableOpacity>
+
+      {expanded && route.segments.map(segment => (
+        <View key={`${route.id}-${segment.segment}`} style={styles.segmentRow}>
+          <View style={styles.segmentNumber}>
+            <Text style={styles.segmentNumberText}>{segment.segment}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.segmentMode}>{segment.mode}</Text>
+            <Text style={styles.segmentDescription}>{segment.description}</Text>
+          </View>
+          <View style={styles.segmentMeta}>
+            <Text style={styles.segmentTime}>{segment.duration} min</Text>
+            <Text style={styles.segmentFare}>{segment.fare ? `P${segment.fare.toFixed(2)}` : 'Free'}</Text>
+          </View>
+        </View>
+      ))}
+    </View>
   );
 }
 
@@ -249,6 +253,18 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', paddingVertical: 32, backgroundColor: Colors.surface, borderRadius: 8 },
   emptyTitle: { fontSize: 18, fontWeight: '700', color: Colors.text, marginTop: 12 },
   emptyMsg: { fontSize: 14, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' },
+  routeResultCard: { backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, padding: 12, marginBottom: 10 },
+  routeResultHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  routeResultTitle: { fontSize: 15, fontWeight: '800', color: Colors.text },
+  routeResultMeta: { fontSize: 13, color: Colors.primary, fontWeight: '800', marginTop: 4 },
+  segmentRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderTopWidth: 1, borderTopColor: Colors.border, paddingTop: 10, marginTop: 10 },
+  segmentNumber: { width: 26, height: 26, borderRadius: 13, backgroundColor: Colors.primary + '14', alignItems: 'center', justifyContent: 'center' },
+  segmentNumberText: { color: Colors.primary, fontSize: 12, fontWeight: '800' },
+  segmentMode: { color: Colors.text, fontSize: 13, fontWeight: '800' },
+  segmentDescription: { color: Colors.textSecondary, fontSize: 12, lineHeight: 17, marginTop: 2 },
+  segmentMeta: { alignItems: 'flex-end' },
+  segmentTime: { color: Colors.text, fontSize: 12, fontWeight: '800' },
+  segmentFare: { color: Colors.primary, fontSize: 12, fontWeight: '800', marginTop: 3 },
   stepRow: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: Colors.surface, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, marginBottom: 8 },
   stepTitle: { fontSize: 14, fontWeight: '800', color: Colors.text },
   stepText: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },

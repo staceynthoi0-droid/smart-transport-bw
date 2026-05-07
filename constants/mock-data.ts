@@ -3,6 +3,26 @@ export type RouteTraffic = 'low' | 'medium' | 'high';
 export type RouteStatus = 'active' | 'slow' | 'disrupted';
 export type SeatStatus = 'Empty' | 'Half-full' | 'Almost full';
 export type TripStage = 'Searching' | 'Assigned' | 'Waiting' | 'In Progress' | 'Completed';
+export type RouteMode = 'Walk' | 'Combi' | 'Taxi' | 'Bus' | 'Special Taxi';
+
+export type RouteSegment = {
+  segment: number;
+  mode: RouteMode;
+  description: string;
+  duration: number;
+  fare: number;
+};
+
+export type RouteOption = {
+  id: string;
+  from: string;
+  to: string;
+  title: string;
+  totalFare: number;
+  totalTime: number;
+  type: 'multi-leg' | 'direct';
+  segments: RouteSegment[];
+};
 
 export const GABORONE_CENTER = {
   latitude: -24.6547,
@@ -22,6 +42,10 @@ export const POPULAR_PLACES = [
   'Broadhurst',
   'Phakalane',
   'Rail Park Mall',
+  'Block 6',
+  'CBD',
+  'Riverwalk Mall',
+  'Sebele',
 ];
 
 export const LANDMARK_HINTS = [
@@ -146,6 +170,103 @@ export const MOCK_MULTI_LEG_TRIP = [
   { id: 'leg3', route: 'UB transfer', instruction: 'Transfer at UB Library Gate for Airport Junction', wait: '6 min', fare: 5.5 },
 ];
 
+export const MULTI_LEG_ROUTE_OPTIONS: RouteOption[] = [
+  {
+    id: 'ml-block6-ub',
+    from: 'Block 6',
+    to: 'University of Botswana',
+    title: 'Block 6 to University of Botswana',
+    totalFare: 18,
+    totalTime: 35,
+    type: 'multi-leg',
+    segments: [
+      { segment: 1, mode: 'Walk', description: 'Walk 2 minutes to Block 6 combi stop', duration: 2, fare: 0 },
+      { segment: 2, mode: 'Combi', description: 'Take combi to Bus Rank Station', duration: 12, fare: 9 },
+      { segment: 3, mode: 'Walk', description: 'Walk 2 minutes to taxi rank', duration: 2, fare: 0 },
+      { segment: 4, mode: 'Taxi', description: 'Take taxi to University of Botswana', duration: 15, fare: 9 },
+    ],
+  },
+  {
+    id: 'ml-mainmall-ub',
+    from: 'Main Mall',
+    to: 'University of Botswana',
+    title: 'Main Mall to University of Botswana',
+    totalFare: 16,
+    totalTime: 28,
+    type: 'multi-leg',
+    segments: [
+      { segment: 1, mode: 'Taxi', description: 'Take taxi from Main Mall to Bus Rank', duration: 8, fare: 10 },
+      { segment: 2, mode: 'Walk', description: 'Walk 2 minutes to combi stop', duration: 2, fare: 0 },
+      { segment: 3, mode: 'Combi', description: 'Take combi to University of Botswana', duration: 15, fare: 6 },
+    ],
+  },
+  {
+    id: 'ml-phakalane-cbd',
+    from: 'Phakalane',
+    to: 'CBD',
+    title: 'Phakalane to CBD',
+    totalFare: 22,
+    totalTime: 55,
+    type: 'multi-leg',
+    segments: [
+      { segment: 1, mode: 'Walk', description: 'Walk 3 minutes to Phakalane bus stop', duration: 3, fare: 0 },
+      { segment: 2, mode: 'Bus', description: 'Take bus to CBD Bus Rank', duration: 40, fare: 15 },
+      { segment: 3, mode: 'Walk', description: 'Walk 2 minutes to combi stop', duration: 2, fare: 0 },
+      { segment: 4, mode: 'Combi', description: 'Take combi to final destination', duration: 10, fare: 7 },
+    ],
+  },
+  {
+    id: 'ml-tlokweng-airport',
+    from: 'Tlokweng Border',
+    to: 'Airport Junction',
+    title: 'Tlokweng Border to Airport Junction',
+    totalFare: 28,
+    totalTime: 65,
+    type: 'multi-leg',
+    segments: [
+      { segment: 1, mode: 'Taxi', description: 'Take taxi from Tlokweng Border to Bus Rank', duration: 20, fare: 15 },
+      { segment: 2, mode: 'Walk', description: 'Walk 1 minute to bus stop', duration: 1, fare: 0 },
+      { segment: 3, mode: 'Bus', description: 'Take bus to Airport Junction', duration: 35, fare: 13 },
+    ],
+  },
+  {
+    id: 'ml-mogoditshane-riverwalk',
+    from: 'Mogoditshane',
+    to: 'Riverwalk Mall',
+    title: 'Mogoditshane to Riverwalk Mall',
+    totalFare: 20,
+    totalTime: 40,
+    type: 'multi-leg',
+    segments: [
+      { segment: 1, mode: 'Combi', description: 'Take combi from Mogoditshane to CBD', duration: 25, fare: 9 },
+      { segment: 2, mode: 'Walk', description: 'Walk 3 minutes to taxi stop', duration: 3, fare: 0 },
+      { segment: 3, mode: 'Special Taxi', description: 'Take special taxi to Riverwalk Mall', duration: 10, fare: 11 },
+    ],
+  },
+  {
+    id: 'ml-broadhurst-gamecity',
+    from: 'Broadhurst',
+    to: 'Game City',
+    title: 'Broadhurst to Game City',
+    totalFare: 21,
+    totalTime: 45,
+    type: 'multi-leg',
+    segments: [
+      { segment: 1, mode: 'Combi', description: 'Take combi from Broadhurst to CBD', duration: 20, fare: 9 },
+      { segment: 2, mode: 'Walk', description: 'Walk 5 minutes to bus stop', duration: 5, fare: 0 },
+      { segment: 3, mode: 'Bus', description: 'Take bus to Game City', duration: 18, fare: 12 },
+    ],
+  },
+];
+
+export const DIRECT_ROUTE_OPTIONS: RouteOption[] = [
+  { id: 'direct-station-ub', from: 'Station', to: 'University of Botswana', title: 'Station to UB', totalFare: 15, totalTime: 20, type: 'direct', segments: [{ segment: 1, mode: 'Taxi', description: 'Take taxi from Station to University of Botswana', duration: 20, fare: 15 }] },
+  { id: 'direct-block6-mainmall', from: 'Block 6', to: 'Main Mall', title: 'Block 6 to Main Mall', totalFare: 9, totalTime: 15, type: 'direct', segments: [{ segment: 1, mode: 'Combi', description: 'Take combi from Block 6 to Main Mall', duration: 15, fare: 9 }] },
+  { id: 'direct-riverwalk-gamecity', from: 'Riverwalk', to: 'Game City', title: 'Riverwalk to Game City', totalFare: 36, totalTime: 18, type: 'direct', segments: [{ segment: 1, mode: 'Special Taxi', description: 'Take special taxi from Riverwalk to Game City', duration: 18, fare: 36 }] },
+  { id: 'direct-cbd-airport', from: 'CBD', to: 'Airport Junction', title: 'CBD to Airport Junction', totalFare: 12, totalTime: 35, type: 'direct', segments: [{ segment: 1, mode: 'Bus', description: 'Take bus from CBD to Airport Junction', duration: 35, fare: 12 }] },
+  { id: 'direct-broadhurst-sebele', from: 'Broadhurst', to: 'Sebele', title: 'Broadhurst to Sebele', totalFare: 9, totalTime: 22, type: 'direct', segments: [{ segment: 1, mode: 'Combi', description: 'Take combi from Broadhurst to Sebele', duration: 22, fare: 9 }] },
+];
+
 export const MOCK_TRIP_HISTORY = [
   { id: 'h1', from: 'Main Mall', to: 'BBS Mall', date: '2026-05-04', fare: 5.5, vehicle: 'B 123 ABC' },
   { id: 'h2', from: 'Station Bus Rank', to: 'University of Botswana', date: '2026-05-02', fare: 7, vehicle: 'B 456 DEF' },
@@ -176,4 +297,30 @@ export function fuzzyPlaceMatch(query: string, value: string) {
     if (cleanValue.includes(char)) hits += 1;
   }
   return hits / Math.max(cleanQuery.length, 1) > 0.7;
+}
+
+function routeText(value: string) {
+  return value.toLowerCase().replace(/university of botswana/g, 'ub').replace(/bus rank station/g, 'station').replace(/station bus rank/g, 'station').replace(/ mall/g, '').trim();
+}
+
+function matchesPlace(query: string, value: string) {
+  const q = routeText(query);
+  const v = routeText(value);
+  return !q || v.includes(q) || q.includes(v) || fuzzyPlaceMatch(q, v);
+}
+
+export function findRouteOptions(fromQuery: string, toQuery: string) {
+  const allRoutes = [...MULTI_LEG_ROUTE_OPTIONS, ...DIRECT_ROUTE_OPTIONS];
+  const hasFrom = Boolean(fromQuery.trim()) && routeText(fromQuery) !== 'current location';
+  const hasTo = Boolean(toQuery.trim());
+
+  if (!hasTo && !hasFrom) return [];
+
+  return allRoutes
+    .filter(route => {
+      const fromMatch = !hasFrom || matchesPlace(fromQuery, route.from) || route.segments.some(segment => matchesPlace(fromQuery, segment.description));
+      const toMatch = !hasTo || matchesPlace(toQuery, route.to) || matchesPlace(toQuery, route.title) || route.segments.some(segment => matchesPlace(toQuery, segment.description));
+      return fromMatch && toMatch;
+    })
+    .sort((a, b) => a.totalTime - b.totalTime);
 }
