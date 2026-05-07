@@ -10,13 +10,11 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsGuest(!session);
       if (session?.user) {
         const { data: profileData } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
         setProfile(profileData);
@@ -29,7 +27,6 @@ export function useAuth() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsGuest(!session);
       if (session?.user) {
         const { data: profileData } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
         setProfile(profileData);
@@ -104,13 +101,7 @@ export function useAuth() {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setIsGuest(true);
   };
 
-  const continueAsGuest = () => {
-    setIsGuest(true);
-    setLoading(false);
-  };
-
-  return { session, user, profile, loading, isGuest, signUp, signIn, signInWithProvider, signOut, continueAsGuest, refreshProfile, updateProfile };
+  return { session, user, profile, loading, signUp, signIn, signInWithProvider, signOut, refreshProfile, updateProfile };
 }

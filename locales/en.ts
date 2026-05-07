@@ -17,8 +17,7 @@ export default {
     loading: 'Loading...',
     error: 'Error',
     success: 'Success',
-    welcome: 'Welcome',
-    guest: 'Continue as Guest'
+    welcome: 'Welcome'
   },
   auth: {
     loginTitle: 'Welcome Back',

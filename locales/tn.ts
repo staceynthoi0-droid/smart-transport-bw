@@ -17,8 +17,7 @@ export default {
     loading: 'E a emisa...',
     error: 'Phoso',
     success: 'Go Atlega',
-    welcome: 'O Amogetswe',
-    guest: 'Tsena jaaka Moeng'
+    welcome: 'O Amogetswe'
   },
   auth: {
     loginTitle: 'O Amogetswe Gape',

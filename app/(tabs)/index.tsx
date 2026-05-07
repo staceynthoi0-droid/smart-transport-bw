@@ -13,7 +13,7 @@ import { getFavourites, getRecentSearches, cacheRecentSearches } from '@/lib/off
 export default function HomeScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ from?: string; to?: string; search?: string }>();
-  const { user, isGuest } = useAuth();
+  const { user } = useAuth();
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [favourites, setFavourites] = useState<string[]>([]);
@@ -66,14 +66,9 @@ export default function HomeScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.greeting}>
         <Text style={styles.greetingText}>
-          {isGuest ? 'Welcome, Explorer' : `Hello${user?.email ? ', ' + user.email.split('@')[0] : ''}`}
+          {user?.email ? 'Hello, ' + user.email.split('@')[0] : 'Welcome'}
         </Text>
         <Text style={styles.greetingSub}>Cash fares, live routes, safer pickups around Gaborone.</Text>
-        {isGuest && (
-          <TouchableOpacity onPress={() => router.push('/auth/login')}>
-            <Text style={styles.loginLink}>Sign in for bookings and trip history</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       <View style={styles.searchCard}>

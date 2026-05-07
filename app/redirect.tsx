@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { Colors } from '@/constants/colors';
@@ -10,7 +10,10 @@ export default function RedirectScreen() {
 
   useEffect(() => {
     if (!loading) {
-      if (profile?.role === 'driver') {
+      if (!profile) {
+        // No profile means not authenticated
+        router.replace('/auth/login');
+      } else if (profile.role === 'driver') {
         router.replace('/driver/dashboard');
       } else {
         router.replace('/(tabs)');

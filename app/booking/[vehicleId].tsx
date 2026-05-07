@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 export default function BookingScreen() {
   const { vehicleId } = useLocalSearchParams<{ vehicleId: string }>();
   const router = useRouter();
-  const { isGuest } = useAuth();
+  const { user } = useAuth();
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
 
   const vehicle = MOCK_VEHICLES.find(v => v.id === vehicleId);
@@ -34,13 +34,6 @@ export default function BookingScreen() {
   const availableSeats = Array.from({ length: vehicle.total_seats }, (_, i) => i + 1).filter((_, i) => i < vehicle.seats_available);
 
   const handleBook = () => {
-    if (isGuest) {
-      Alert.alert('Sign In Required', 'Please sign in to book a ride.', [
-        { text: 'Cancel' },
-        { text: 'Sign In', onPress: () => router.push('/auth/login') },
-      ]);
-      return;
-    }
     if (!selectedSeat) {
       Alert.alert('Select a Seat', 'Please select a seat or use Best Available.');
       return;
