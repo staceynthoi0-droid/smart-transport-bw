@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
@@ -41,6 +42,7 @@ export default function RegisterScreen() {
       email: email.trim(),
       password: password,
       options: {
+        emailRedirectTo: Linking.createURL('/redirect'),
         data: {
           full_name: fullName,
           phone: phone,

@@ -1,7 +1,7 @@
 -- Demo users for Smart Public Transport BW.
 -- Run this in Supabase SQL Editor after applying the profile schema update.
--- Demo commuter: commuter.demo@smarttransportbw.co.bw / Demo1234!
--- Demo driver:   driver.demo@smarttransportbw.co.bw / Driver1234!
+-- Demo commuter: commuter.demo@gmail.com / Demo1234!
+-- Demo driver:   driver.demo@gmail.com / Driver1234!
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -30,7 +30,7 @@ BEGIN
       commuter_id,
       'authenticated',
       'authenticated',
-      'commuter.demo@smarttransportbw.co.bw',
+      'commuter.demo@gmail.com',
       crypt('Demo1234!', gen_salt('bf')),
       now(),
       now(),
@@ -44,7 +44,7 @@ BEGIN
       driver_id,
       'authenticated',
       'authenticated',
-      'driver.demo@smarttransportbw.co.bw',
+      'driver.demo@gmail.com',
       crypt('Driver1234!', gen_salt('bf')),
       now(),
       now(),
@@ -61,6 +61,42 @@ BEGIN
     confirmed_at = COALESCE(auth.users.confirmed_at, now()),
     raw_app_meta_data = EXCLUDED.raw_app_meta_data,
     raw_user_meta_data = EXCLUDED.raw_user_meta_data,
+    updated_at = now();
+
+  INSERT INTO auth.identities (
+    id,
+    user_id,
+    provider_id,
+    identity_data,
+    provider,
+    last_sign_in_at,
+    created_at,
+    updated_at
+  )
+  VALUES
+    (
+      gen_random_uuid(),
+      commuter_id,
+      commuter_id::text,
+      jsonb_build_object('sub', commuter_id::text, 'email', 'commuter.demo@gmail.com', 'email_verified', true),
+      'email',
+      now(),
+      now(),
+      now()
+    ),
+    (
+      gen_random_uuid(),
+      driver_id,
+      driver_id::text,
+      jsonb_build_object('sub', driver_id::text, 'email', 'driver.demo@gmail.com', 'email_verified', true),
+      'email',
+      now(),
+      now(),
+      now()
+    )
+  ON CONFLICT (provider, provider_id) DO UPDATE
+  SET
+    identity_data = EXCLUDED.identity_data,
     updated_at = now();
 
   INSERT INTO public.profiles (

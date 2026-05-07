@@ -10,14 +10,14 @@ export const DEMO_ACCOUNTS: Array<{
   {
     role: 'commuter',
     label: 'Demo Commuter',
-    email: 'commuter.demo@smarttransportbw.co.bw',
+    email: 'commuter.demo@gmail.com',
     password: 'Demo1234!',
     fullName: 'Demo Commuter',
   },
   {
     role: 'driver',
     label: 'Demo Driver',
-    email: 'driver.demo@smarttransportbw.co.bw',
+    email: 'driver.demo@gmail.com',
     password: 'Driver1234!',
     fullName: 'Demo Driver',
   },

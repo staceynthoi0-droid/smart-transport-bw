@@ -82,7 +82,10 @@ export function useAuth() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName, role, ...additionalData } },
+      options: {
+        emailRedirectTo: ExpoLinking.createURL('/redirect'),
+        data: { full_name: fullName, role, ...additionalData },
+      },
     });
     if (error) return { error };
     if (data.user) {
