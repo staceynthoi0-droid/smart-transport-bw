@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
+import { DEMO_ACCOUNTS } from '@/constants/demo-accounts';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LoginScreen() {
@@ -38,6 +40,26 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Smart Transport BW</Text>
         <Text style={styles.subtitle}>{t.auth.loginSubtitle}</Text>
+
+        <View style={styles.demoPanel}>
+          <Text style={styles.demoTitle}>Demo Logins</Text>
+          {DEMO_ACCOUNTS.map(account => (
+            <TouchableOpacity
+              key={account.email}
+              style={styles.demoButton}
+              onPress={() => {
+                setEmail(account.email);
+                setPassword(account.password);
+              }}
+            >
+              <Ionicons name={account.role === 'driver' ? 'bus-outline' : 'walk-outline'} size={18} color={Colors.primary} />
+              <View style={styles.demoInfo}>
+                <Text style={styles.demoLabel}>{account.label}</Text>
+                <Text style={styles.demoCreds}>{account.email} / {account.password}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         <TextInput
           style={styles.input}
@@ -83,6 +105,12 @@ const styles = StyleSheet.create({
   inner: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   title: { fontSize: 28, fontWeight: '800', color: Colors.primary, textAlign: 'center' },
   subtitle: { fontSize: 15, color: Colors.textSecondary, textAlign: 'center', marginTop: 8, marginBottom: 24 },
+  demoPanel: { backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, padding: 12, marginBottom: 16 },
+  demoTitle: { color: Colors.text, fontSize: 14, fontWeight: '800', marginBottom: 8 },
+  demoButton: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9 },
+  demoInfo: { flex: 1 },
+  demoLabel: { color: Colors.text, fontSize: 13, fontWeight: '800' },
+  demoCreds: { color: Colors.textSecondary, fontSize: 11, marginTop: 2 },
   input: { backgroundColor: Colors.surface, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, borderWidth: 1, borderColor: Colors.border, marginBottom: 14, color: Colors.text },
   button: { backgroundColor: Colors.primary, borderRadius: 8, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
   buttonText: { color: '#FFF', fontWeight: '800', fontSize: 16 },
