@@ -15,6 +15,7 @@ export default function LoginScreen() {
   const [providerLoading, setProviderLoading] = useState<'google' | 'facebook' | null>(null);
 
   const goHome = () => router.replace('/(tabs)');
+  const goToRoleHome = () => router.replace('/redirect');
 
   const handleLogin = async () => {
     setError('');
@@ -42,7 +43,7 @@ export default function LoginScreen() {
       return;
     }
 
-    goHome();
+    goToRoleHome();
   };
 
   const handleProviderLogin = async (provider: 'google' | 'facebook') => {
@@ -56,7 +57,7 @@ export default function LoginScreen() {
       return;
     }
 
-    goHome();
+    goToRoleHome();
   };
 
   return (

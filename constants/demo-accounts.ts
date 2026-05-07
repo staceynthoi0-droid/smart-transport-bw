@@ -1,4 +1,4 @@
-import { UserRole } from '@/hooks/useAuth';
+import type { UserRole } from '@/hooks/useAuth';
 
 export const DEMO_ACCOUNTS: Array<{
   role: UserRole;

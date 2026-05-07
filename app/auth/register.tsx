@@ -19,6 +19,7 @@ export default function RegisterScreen() {
   const [providerLoading, setProviderLoading] = useState<'google' | 'facebook' | null>(null);
 
   const goHome = () => router.replace('/(tabs)');
+  const goToRoleHome = () => router.replace('/redirect');
 
   const clearError = () => {
     if (error) setError('');
@@ -49,7 +50,7 @@ export default function RegisterScreen() {
       return;
     }
 
-    goHome();
+    goToRoleHome();
   };
 
   const handleProviderLogin = async (provider: 'google' | 'facebook') => {
@@ -63,7 +64,7 @@ export default function RegisterScreen() {
       return;
     }
 
-    goHome();
+    goToRoleHome();
   };
 
   return (
