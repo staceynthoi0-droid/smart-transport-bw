@@ -19,9 +19,19 @@ export default function ProfileScreen() {
 
   if (!user) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text>No user found</Text>
-      </View>
+      <ScrollView style={styles.container} contentContainerStyle={styles.guestContent}>
+        <View style={styles.guestIcon}>
+          <Ionicons name="person-outline" size={42} color={Colors.primary} />
+        </View>
+        <Text style={styles.guestTitle}>Browsing as Guest</Text>
+        <Text style={styles.guestText}>Sign in to save places, see trip history, report issues, and manage your commuter profile.</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={() => router.push('/auth/login')}>
+          <Text style={styles.primaryButtonText}>Sign In</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/auth/register')}>
+          <Text style={styles.secondaryButtonText}>Create Account</Text>
+        </TouchableOpacity>
+      </ScrollView>
     );
   }
 
@@ -74,6 +84,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: 16 },
   loadingContainer: { flex: 1, backgroundColor: Colors.background, alignItems: 'center', justifyContent: 'center' },
+  guestContent: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  guestIcon: { width: 82, height: 82, borderRadius: 41, backgroundColor: Colors.primary + '15', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  guestTitle: { fontSize: 22, fontWeight: '800', color: Colors.text, marginBottom: 8, textAlign: 'center' },
+  guestText: { color: Colors.textSecondary, fontSize: 14, lineHeight: 20, textAlign: 'center', marginBottom: 20 },
+  primaryButton: { width: '100%', backgroundColor: Colors.primary, borderRadius: 8, alignItems: 'center', paddingVertical: 14, marginBottom: 10 },
+  primaryButtonText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  secondaryButton: { width: '100%', borderWidth: 1.5, borderColor: Colors.primary, borderRadius: 8, alignItems: 'center', paddingVertical: 14 },
+  secondaryButtonText: { color: Colors.primary, fontSize: 16, fontWeight: '800' },
   profileHeader: { alignItems: 'center', paddingVertical: 24 },
   avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.primary + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   avatarImage: { width: 72, height: 72, borderRadius: 36 },

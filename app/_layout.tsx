@@ -15,7 +15,7 @@ export default function RootLayout() {
     );
   }
 
-  // Not authenticated - auth stack only
+  // Not authenticated - allow auth plus guest browsing routes.
   if (!user) {
     return (
       <LanguageProvider>
@@ -25,6 +25,9 @@ export default function RootLayout() {
           <Stack.Screen name="redirect" options={{ headerShown: false }} />
           <Stack.Screen name="auth/login" options={{ headerShown: true, title: 'Sign In', headerBackTitle: 'Back' }} />
           <Stack.Screen name="auth/register" options={{ headerShown: true, title: 'Sign Up', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="booking/[vehicleId]" options={{ headerShown: true, title: 'Book Ride', headerBackTitle: 'Back' }} />
+          <Stack.Screen name="booking/confirmation" options={{ headerShown: true, title: 'Booking Confirmed', headerBackTitle: 'Back' }} />
         </Stack>
       </LanguageProvider>
     );

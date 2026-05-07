@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signInWithProvider } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [providerLoading, setProviderLoading] = useState<'google' | 'facebook' | null>(null);
 
   async function handleLogin() {
     if (!email || !password) {
@@ -32,6 +36,15 @@ export default function LoginScreen() {
     }
     
     setLoading(false);
+  }
+
+  async function handleProviderLogin(provider: 'google' | 'facebook') {
+    setProviderLoading(provider);
+    const { error } = await signInWithProvider(provider);
+    if (error) {
+      Alert.alert('Sign In Failed', error.message);
+    }
+    setProviderLoading(null);
   }
 
   return (
@@ -69,6 +82,51 @@ export default function LoginScreen() {
             <Text style={styles.buttonText}>Sign In</Text>
           )}
         </TouchableOpacity>
+
+        <View style={styles.dividerRow}>
+          <View style={styles.divider} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.divider} />
+        </View>
+
+        <TouchableOpacity
+          style={styles.socialButton}
+          onPress={() => handleProviderLogin('google')}
+          disabled={providerLoading !== null}
+        >
+          {providerLoading === 'google' ? (
+            <ActivityIndicator color={Colors.text} />
+          ) : (
+            <>
+              <Ionicons name="logo-google" size={20} color={Colors.text} />
+              <Text style={styles.socialText}>Continue with Google</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.socialButton}
+          onPress={() => handleProviderLogin('facebook')}
+          disabled={providerLoading !== null}
+        >
+          {providerLoading === 'facebook' ? (
+            <ActivityIndicator color={Colors.text} />
+          ) : (
+            <>
+              <Ionicons name="logo-facebook" size={20} color="#1877F2" />
+              <Text style={styles.socialText}>Continue with Facebook</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.guestButton}
+          onPress={() => router.replace('/(tabs)')}
+          disabled={loading || providerLoading !== null}
+        >
+          <Ionicons name="person-outline" size={19} color={Colors.primary} />
+          <Text style={styles.guestText}>Continue as Guest</Text>
+        </TouchableOpacity>
         
         <TouchableOpacity
           style={styles.linkButton}
@@ -88,6 +146,13 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderColor: Colors.border, padding: 12, borderRadius: 8, marginBottom: 12, color: Colors.text },
   button: { backgroundColor: '#00A876', padding: 15, borderRadius: 8, alignItems: 'center' },
   buttonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 18 },
+  divider: { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText: { color: Colors.textSecondary, fontWeight: '700' },
+  socialButton: { minHeight: 50, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.surface, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 10 },
+  socialText: { color: Colors.text, fontWeight: '700', fontSize: 15 },
+  guestButton: { minHeight: 50, borderRadius: 8, borderWidth: 1.5, borderColor: Colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 2 },
+  guestText: { color: Colors.primary, fontWeight: '800', fontSize: 15 },
   linkButton: { marginTop: 15, alignItems: 'center' },
   linkText: { color: '#146EB4' },
 });

@@ -8,7 +8,7 @@ export interface Database {
           id: string;
           full_name: string | null;
           phone: string | null;
-          role: 'passenger' | 'driver' | 'admin';
+          role: 'commuter' | 'driver' | 'admin';
           avatar_url: string | null;
           created_at: string;
         };

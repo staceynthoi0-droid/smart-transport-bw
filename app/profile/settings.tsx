@@ -33,7 +33,6 @@ export default function SettingsScreen() {
       <SettingRow
         title={t.profile.language}
         subtitle={language === 'en' ? 'Setswana' : 'English'}
-        showArrow={false}
         onPress={toggleLanguage}
         rightElement={
           <View style={styles.languageBadge}>

@@ -34,6 +34,13 @@ export default function BookingScreen() {
   const availableSeats = Array.from({ length: vehicle.total_seats }, (_, i) => i + 1).filter((_, i) => i < vehicle.seats_available);
 
   const handleBook = () => {
+    if (!user) {
+      Alert.alert('Sign in required', 'Create an account or sign in to confirm a booking.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign In', onPress: () => router.push('/auth/login') },
+      ]);
+      return;
+    }
     if (!selectedSeat) {
       Alert.alert('Select a Seat', 'Please select a seat or use Best Available.');
       return;
