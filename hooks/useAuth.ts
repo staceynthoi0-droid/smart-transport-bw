@@ -53,33 +53,25 @@ const setAuthState = (nextState: AuthState) => {
   listeners.forEach(listener => listener(authState));
 };
 
-const buildDemoAuthState = (email: string): AuthState => {
+const buildDemoAuthState = (email: string, selectedRole?: UserRole): AuthState => {
   const account = DEMO_ACCOUNTS.find(demoAccount => demoAccount.email.toLowerCase() === email.toLowerCase());
-
-  if (!account) {
-    return {
-      user: {
-        ...demoUser,
-        email,
-      },
-      profile: demoProfile,
-    };
-  }
+  const role = selectedRole || account?.role || 'commuter';
+  const fullName = account?.role === role ? account.fullName : role === 'driver' ? 'Demo Driver' : 'Demo User';
 
   return {
     user: {
-      id: `mock-${account.role}-user`,
-      email: account.email,
+      id: `mock-${role}-user`,
+      email,
       user_metadata: {
-        full_name: account.fullName,
-        role: account.role,
+        full_name: fullName,
+        role,
       },
     },
     profile: {
-      id: `mock-${account.role}-user`,
-      full_name: account.fullName,
-      phone: account.role === 'driver' ? '+267 7222 0002' : '+267 7111 0001',
-      role: account.role,
+      id: `mock-${role}-user`,
+      full_name: fullName,
+      phone: role === 'driver' ? '+267 7222 0002' : '+267 7111 0001',
+      role,
       avatar_url: null,
     },
   };
@@ -114,20 +106,27 @@ export function useAuth() {
     return { error: null };
   };
 
-  const signIn = async (email: string, _password: string): AuthResult => {
-    setAuthState(buildDemoAuthState(email));
+  const signIn = async (email: string, _password: string, role?: UserRole): AuthResult => {
+    setAuthState(buildDemoAuthState(email, role));
     return { error: null };
   };
 
-  const signInWithProvider = async (provider: 'google' | 'facebook'): ProviderResult => {
+  const signInWithProvider = async (provider: 'google' | 'facebook', role: UserRole = 'commuter'): ProviderResult => {
     setAuthState({
       user: {
-        ...demoUser,
+        id: `mock-${role}-${provider}-user`,
         email: `${provider}.demo@smarttransport.bw`,
+        user_metadata: {
+          full_name: provider === 'google' ? 'Google Demo User' : 'Facebook Demo User',
+          role,
+        },
       },
       profile: {
-        ...demoProfile,
+        id: `mock-${role}-${provider}-user`,
         full_name: provider === 'google' ? 'Google Demo User' : 'Facebook Demo User',
+        phone: role === 'driver' ? '+267 7222 0002' : '+267 7111 0001',
+        role,
+        avatar_url: null,
       },
     });
     return { data: null, error: null };

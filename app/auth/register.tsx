@@ -56,7 +56,7 @@ export default function RegisterScreen() {
   const handleProviderLogin = async (provider: 'google' | 'facebook') => {
     setError('');
     setProviderLoading(provider);
-    const { error: providerError } = await signInWithProvider(provider);
+    const { error: providerError } = await signInWithProvider(provider, role);
     setProviderLoading(null);
 
     if (providerError) {

@@ -3,13 +3,14 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleShe
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, type UserRole } from '@/hooks/useAuth';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn, signInWithProvider } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<UserRole>('commuter');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [providerLoading, setProviderLoading] = useState<'google' | 'facebook' | null>(null);
@@ -35,7 +36,7 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    const { error: signInError } = await signIn(cleanEmail, password);
+    const { error: signInError } = await signIn(cleanEmail, password, role);
     setLoading(false);
 
     if (signInError) {
@@ -49,7 +50,7 @@ export default function LoginScreen() {
   const handleProviderLogin = async (provider: 'google' | 'facebook') => {
     setError('');
     setProviderLoading(provider);
-    const { error: providerError } = await signInWithProvider(provider);
+    const { error: providerError } = await signInWithProvider(provider, role);
     setProviderLoading(null);
 
     if (providerError) {
@@ -96,6 +97,18 @@ export default function LoginScreen() {
             }}
             secureTextEntry
           />
+
+          <Text style={styles.roleLabel}>Sign in as</Text>
+          <View style={styles.roleContainer}>
+            <TouchableOpacity style={[styles.roleButton, role === 'commuter' && styles.roleSelected]} onPress={() => setRole('commuter')}>
+              <Ionicons name="person-outline" size={18} color={role === 'commuter' ? '#FFF' : Colors.text} />
+              <Text style={[styles.roleText, role === 'commuter' && styles.roleTextSelected]}>User</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.roleButton, role === 'driver' && styles.roleSelected]} onPress={() => setRole('driver')}>
+              <Ionicons name="car-outline" size={18} color={role === 'driver' ? '#FFF' : Colors.text} />
+              <Text style={[styles.roleText, role === 'driver' && styles.roleTextSelected]}>Driver</Text>
+            </TouchableOpacity>
+          </View>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
@@ -154,6 +167,12 @@ const styles = StyleSheet.create({
   subtitle: { color: Colors.textSecondary, fontSize: 14, lineHeight: 20, textAlign: 'center', marginTop: 8 },
   form: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, padding: 16 },
   input: { minHeight: 52, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, paddingHorizontal: 14, color: Colors.text, marginBottom: 12, backgroundColor: Colors.background },
+  roleLabel: { color: Colors.textSecondary, fontSize: 13, fontWeight: '800', marginBottom: 8 },
+  roleContainer: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  roleButton: { flex: 1, minHeight: 46, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.surface, flexDirection: 'row', gap: 8 },
+  roleSelected: { backgroundColor: '#00A876', borderColor: '#00A876' },
+  roleText: { color: Colors.text, fontWeight: '800' },
+  roleTextSelected: { color: '#FFF' },
   errorText: { color: Colors.danger, fontSize: 13, fontWeight: '700', marginBottom: 12 },
   primaryButton: { minHeight: 52, borderRadius: 8, backgroundColor: '#00A876', alignItems: 'center', justifyContent: 'center' },
   primaryText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
