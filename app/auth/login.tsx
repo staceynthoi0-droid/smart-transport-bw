@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 import { useAuth, UserRole } from '@/hooks/useAuth';
 import { DEMO_ACCOUNTS } from '@/constants/demo-accounts';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn, signInWithProvider, continueAsGuest } = useAuth();
+  const { t } = useLanguage();
   const [role, setRole] = useState<UserRole>('commuter');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,17 +19,28 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields.');
+      Alert.alert(t.errors.invalidEmail, 'Please fill in all fields.');
       return;
     }
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) {
-      Alert.alert('Login Failed', error.message);
+      Alert.alert(t.errors.loginFailed, error.message);
       return;
     }
-    if (role === 'driver') {
+    // Get authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      Alert.alert(t.errors.sessionExpired, 'Could not retrieve user session.');
+      return;
+    }
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (profile?.role === 'driver') {
       router.replace('/driver/dashboard');
     } else {
       router.replace('/(tabs)');
@@ -46,11 +60,11 @@ export default function LoginScreen() {
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Smart Transport BW</Text>
-        <Text style={styles.subtitle}>Sign in and choose how you use the app</Text>
+        <Text style={styles.subtitle}>{t.auth.loginSubtitle}</Text>
 
         <View style={styles.roleContainer}>
-          <RoleCard role="commuter" active={role === 'commuter'} icon="walk-outline" title="Commuter" onPress={() => setRole('commuter')} />
-          <RoleCard role="driver" active={role === 'driver'} icon="bus-outline" title="Driver" onPress={() => setRole('driver')} />
+          <RoleCard role="commuter" active={role === 'commuter'} icon="walk-outline" title={t.auth.commuter} detail={t.auth.roleDescription} onPress={() => setRole('commuter')} />
+          <RoleCard role="driver" active={role === 'driver'} icon="bus-outline" title={t.auth.driver} detail={t.auth.driverDescription} onPress={() => setRole('driver')} />
         </View>
 
         <View style={styles.demoPanel}>
@@ -74,11 +88,26 @@ export default function LoginScreen() {
           ))}
         </View>
 
-        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={Colors.textSecondary} />
-        <TextInput style={styles.input} placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry placeholderTextColor={Colors.textSecondary} />
+        <TextInput
+          style={styles.input}
+          placeholder="email@example.com"
+          placeholderTextColor={Colors.textSecondary}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your password"
+          placeholderTextColor={Colors.textSecondary}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-          <Text style={styles.buttonText}>{loading ? 'Signing in...' : role === 'driver' ? 'Sign In as Driver' : 'Sign In as Commuter'}</Text>
+          <Text style={styles.buttonText}>{loading ? t.common.loading : role === 'driver' ? 'Sign In as Driver' : 'Sign In as Commuter'}</Text>
         </TouchableOpacity>
 
         <View style={styles.dividerRow}>
@@ -99,22 +128,23 @@ export default function LoginScreen() {
         </View>
 
         <TouchableOpacity onPress={() => router.push('/auth/register')}>
-          <Text style={styles.link}>Do not have an account? <Text style={styles.linkBold}>Sign Up</Text></Text>
+          <Text style={styles.link}>{t.auth.noAccount} <Text style={styles.linkBold}>{t.common.signup}</Text></Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.guestButton} onPress={() => { continueAsGuest(); router.replace('/(tabs)'); }}>
-          <Text style={styles.guestText}>Continue as Guest</Text>
+          <Text style={styles.guestText}>{t.common.guest}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-function RoleCard({ active, icon, title, onPress }: { role: UserRole; active: boolean; icon: keyof typeof Ionicons.glyphMap; title: string; onPress: () => void }) {
+function RoleCard({ active, icon, title, detail, onPress }: { role: UserRole; active: boolean; icon: keyof typeof Ionicons.glyphMap; title: string; detail: string; onPress: () => void }) {
   return (
     <TouchableOpacity style={[styles.roleButton, active && styles.roleSelected]} onPress={onPress}>
       <Ionicons name={icon} size={30} color={active ? Colors.primary : Colors.textSecondary} />
       <Text style={[styles.roleText, active && styles.roleTextSelected]}>{title}</Text>
+      <Text style={styles.roleDetail}>{detail}</Text>
     </TouchableOpacity>
   );
 }
@@ -129,6 +159,7 @@ const styles = StyleSheet.create({
   roleSelected: { borderColor: Colors.primary, backgroundColor: Colors.primary + '12' },
   roleText: { fontSize: 15, fontWeight: '800', color: Colors.text },
   roleTextSelected: { color: Colors.primary },
+  roleDetail: { color: Colors.textSecondary, fontSize: 11, textAlign: 'center', marginTop: 2, lineHeight: 15 },
   demoPanel: { backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, padding: 12, marginBottom: 16 },
   demoTitle: { color: Colors.text, fontSize: 14, fontWeight: '800', marginBottom: 8 },
   demoButton: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9 },

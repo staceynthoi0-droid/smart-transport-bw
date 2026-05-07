@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useAuth, UserRole } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const vehicleTypes = [
   { value: 'taxi', label: 'Taxi', icon: 'car-outline' as const },
@@ -14,10 +15,13 @@ const vehicleTypes = [
 export default function RegisterScreen() {
   const router = useRouter();
   const { signUp } = useAuth();
+  const { t } = useLanguage();
   const [role, setRole] = useState<UserRole>('commuter');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [phone, setPhone] = useState('');
   const [vehicleType, setVehicleType] = useState<'taxi' | 'combi' | 'bus'>('combi');
   const [plate, setPlate] = useState('');
@@ -25,14 +29,27 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
+    // Clear previous errors
+    setPasswordError('');
+
+    // Validate required fields
     if (!fullName || !email || !password) {
-      Alert.alert('Error', 'Please fill in full name, email, and password.');
+      Alert.alert(t.errors.invalidEmail, 'Please fill in full name, email, and password.');
       return;
     }
+
+    // Validate password confirmation
+    if (password !== confirmPassword) {
+      setPasswordError(t.errors.passwordMismatch);
+      return;
+    }
+
+    // Validate password strength
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters.');
+      setPasswordError(t.errors.passwordTooShort);
       return;
     }
+
     if (role === 'driver' && (!phone || !plate || !operatingBase)) {
       Alert.alert('Driver details needed', 'Please add phone number, license plate, and operating location.');
       return;
@@ -45,10 +62,10 @@ export default function RegisterScreen() {
     const { error } = await signUp(email, password, fullName, role, additionalData);
     setLoading(false);
     if (error) {
-      Alert.alert('Registration Failed', error.message);
+      Alert.alert(t.errors.signupFailed, error.message);
       return;
     }
-    Alert.alert('Success', 'Account created. Please check your email to verify it.', [
+    Alert.alert(t.common.success, 'Account created. Please check your email to verify it.', [
       { text: 'OK', onPress: () => router.replace(role === 'driver' ? '/driver/dashboard' : '/auth/login') },
     ]);
   };
@@ -56,19 +73,92 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Choose commuter or driver access</Text>
+        <Text style={styles.title}>{t.auth.signupTitle}</Text>
+        <Text style={styles.subtitle}>{t.auth.signupSubtitle}</Text>
 
-        <Text style={styles.sectionTitle}>Role</Text>
+        <Text style={styles.sectionTitle}>{t.auth.chooseRole}</Text>
         <View style={styles.roleContainer}>
-          <RoleCard active={role === 'commuter'} icon="walk-outline" title="Commuter" detail="Search routes, fares, SOS" onPress={() => setRole('commuter')} />
-          <RoleCard active={role === 'driver'} icon="bus-outline" title="Driver" detail="Seats, route, requests" onPress={() => setRole('driver')} />
+          <RoleCard active={role === 'commuter'} icon="walk-outline" title={t.auth.commuter} detail={t.auth.roleDescription} onPress={() => setRole('commuter')} />
+          <RoleCard active={role === 'driver'} icon="bus-outline" title={t.auth.driver} detail={t.auth.driverDescription} onPress={() => setRole('driver')} />
         </View>
 
-        <TextInput style={styles.input} placeholder="Full name" value={fullName} onChangeText={setFullName} placeholderTextColor={Colors.textSecondary} />
-        <TextInput style={styles.input} placeholder="Phone number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholderTextColor={Colors.textSecondary} />
-        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={Colors.textSecondary} />
-        <TextInput style={styles.input} placeholder="Password (min 6 chars)" value={password} onChangeText={setPassword} secureTextEntry placeholderTextColor={Colors.textSecondary} />
+        <TextInput
+          style={styles.input}
+          placeholder="Your full name"
+          placeholderTextColor={Colors.textSecondary}
+          value={fullName}
+          onChangeText={setFullName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="+267 71 234 567"
+          placeholderTextColor={Colors.textSecondary}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="email@example.com"
+          placeholderTextColor={Colors.textSecondary}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Create a password"
+          placeholderTextColor={Colors.textSecondary}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm your password"
+          placeholderTextColor={Colors.textSecondary}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder={t.common.phoneNumber}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          placeholderTextColor={Colors.textSecondary}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="email@example.com"
+          placeholderTextColor={Colors.textSecondary}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder={t.common.password}
+          placeholderTextColor={Colors.textSecondary}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        <TextInput
+          style={styles.input}
+          placeholder={t.common.confirmPassword}
+          placeholderTextColor={Colors.textSecondary}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+
+        {passwordError ? (
+          <Text style={styles.errorText}>{passwordError}</Text>
+        ) : null}
 
         {role === 'driver' && (
           <View style={styles.driverPanel}>
@@ -87,11 +177,11 @@ export default function RegisterScreen() {
         )}
 
         <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
-          <Text style={styles.buttonText}>{loading ? 'Creating...' : role === 'driver' ? 'Create Driver Account' : 'Create Commuter Account'}</Text>
+          <Text style={styles.buttonText}>{loading ? t.common.loading : role === 'driver' ? 'Create Driver Account' : 'Create Commuter Account'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.link}>Already have an account? <Text style={styles.linkBold}>Sign In</Text></Text>
+          <Text style={styles.link}>{t.auth.hasAccount} <Text style={styles.linkBold}>{t.common.login}</Text></Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -131,4 +221,5 @@ const styles = StyleSheet.create({
   buttonText: { color: '#FFF', fontWeight: '800', fontSize: 16 },
   link: { textAlign: 'center', marginTop: 20, fontSize: 14, color: Colors.textSecondary },
   linkBold: { color: Colors.primary, fontWeight: '700' },
+  errorText: { color: Colors.danger, fontSize: 13, textAlign: 'center', marginTop: -8, marginBottom: 8 },
 });

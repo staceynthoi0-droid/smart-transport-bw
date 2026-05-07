@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 
 export default function RootLayout() {
   return (
-    <>
+    <LanguageProvider>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="onboarding" />
@@ -22,6 +23,6 @@ export default function RootLayout() {
         <Stack.Screen name="profile/report-issue" options={{ headerShown: true, title: 'Report Issue', headerBackTitle: 'Back' }} />
         <Stack.Screen name="profile/settings" options={{ headerShown: true, title: 'Settings', headerBackTitle: 'Back' }} />
       </Stack>
-    </>
+    </LanguageProvider>
   );
 }

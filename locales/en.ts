@@ -1,0 +1,112 @@
+export default {
+  common: {
+    login: 'Login',
+    signup: 'Sign Up',
+    logout: 'Logout',
+    email: 'Email',
+    password: 'Password',
+    confirmPassword: 'Confirm Password',
+    fullName: 'Full Name',
+    phoneNumber: 'Phone Number',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+    back: 'Back',
+    next: 'Next',
+    skip: 'Skip',
+    getStarted: 'Get Started',
+    loading: 'Loading...',
+    error: 'Error',
+    success: 'Success',
+    welcome: 'Welcome',
+    guest: 'Continue as Guest'
+  },
+  auth: {
+    loginTitle: 'Welcome Back',
+    loginSubtitle: 'Sign in to continue',
+    signupTitle: 'Create Account',
+    signupSubtitle: 'Join Smart Transport BW',
+    forgotPassword: 'Forgot Password?',
+    noAccount: "Don't have an account?",
+    hasAccount: 'Already have an account?',
+    chooseRole: 'Select Your Role',
+    commuter: 'Commuter',
+    driver: 'Driver',
+    roleDescription: 'Travel across Gaborone easily',
+    driverDescription: 'Manage your vehicle and trips'
+  },
+  onboarding: {
+    screen1Title: 'Find Transport Easily',
+    screen1Subtitle: 'Locate taxis, combis, and buses near you',
+    screen2Title: 'Know Routes and Prices',
+    screen2Subtitle: 'View routes, stops, and fares in Pula',
+    screen3Title: 'Stay Safe and In Control',
+    screen3Subtitle: 'Check seats, traffic, and use safety features'
+  },
+  home: {
+    findRoute: 'Find Route',
+    nearby: 'Nearby Transport',
+    fares: 'Fares',
+    traffic: 'Traffic',
+    requestTaxi: 'Request Taxi',
+    favorites: 'Favorites',
+    searchPlaceholder: 'Where are you going?',
+    currentLocation: 'Current Location'
+  },
+  route: {
+    from: 'From',
+    to: 'To',
+    fastest: 'Fastest',
+    cheapest: 'Cheapest',
+    taxi: 'Taxi',
+    combi: 'Combi',
+    bus: 'Bus',
+    specialTaxi: 'Special Taxi',
+    travelTime: 'Travel time',
+    fare: 'Fare',
+    seatsAvailable: 'seats available',
+    startNavigation: 'Start Navigation',
+    walking: 'Walk'
+  },
+  bus: {
+    bookBus: 'Book Bus',
+    selectSeat: 'Select Seat',
+    bestAvailable: 'Best Available',
+    confirmation: 'Booking Confirmation',
+    qrCode: 'QR Code',
+    departureTime: 'Departure Time',
+    seatNumber: 'Seat Number'
+  },
+  safety: {
+    safetyMode: 'Safety Mode',
+    shareTrip: 'Share Live Location',
+    shareDescription: 'Your contacts will receive a SMS with tracking link',
+    addContact: 'Add Trusted Contact',
+    sos: 'EMERGENCY SOS',
+    sosHold: 'Hold for 3 seconds to activate',
+    sosActive: 'Emergency Alert Sent',
+    imSafe: "I'm Safe - Cancel Alert"
+  },
+  profile: {
+    profile: 'Profile',
+    settings: 'Settings',
+    language: 'Language',
+    darkMode: 'Dark Mode',
+    notifications: 'Notifications',
+    tripHistory: 'Trip History',
+    savedPlaces: 'Saved Places',
+    favoriteRoutes: 'Favorite Routes',
+    help: 'Help & Support',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service'
+  },
+  errors: {
+    network: 'Network error. Please try again.',
+    invalidEmail: 'Please enter a valid email address',
+    invalidPhone: 'Please enter a valid phone number',
+    passwordMismatch: 'Passwords do not match',
+    passwordTooShort: 'Password must be at least 6 characters',
+    loginFailed: 'Login failed. Check your credentials.',
+    signupFailed: 'Signup failed. Please try again.',
+    sessionExpired: 'Session expired. Please login again.'
+  }
+};

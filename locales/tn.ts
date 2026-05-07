@@ -1,0 +1,112 @@
+export default {
+  common: {
+    login: 'Tsena',
+    signup: 'Ikwadise',
+    logout: 'Tswa',
+    email: 'Imeile',
+    password: 'Phitlho',
+    confirmPassword: 'Tiisa Phitlho',
+    fullName: 'Maina a Gago',
+    phoneNumber: 'Nomoro ya Mopitsi',
+    cancel: 'Tlogela',
+    confirm: 'Tiisa',
+    back: 'Morago',
+    next: 'Latela',
+    skip: 'Tlola',
+    getStarted: 'Simolola',
+    loading: 'E a emisa...',
+    error: 'Phoso',
+    success: 'Go Atlega',
+    welcome: 'O Amogetswe',
+    guest: 'Tsena jaaka Moeng'
+  },
+  auth: {
+    loginTitle: 'O Amogetswe Gape',
+    loginSubtitle: 'Tsena go tswelela',
+    signupTitle: 'Ikwadise',
+    signupSubtitle: 'Tsena mo Smart Transport BW',
+    forgotPassword: 'Lebaditse Phitlho?',
+    noAccount: "Ga o na akhaonto?",
+    hasAccount: 'O setse o na le akhaonto?',
+    chooseRole: 'Itlhopha Karolo',
+    commuter: 'Mopalami',
+    driver: 'Mokgweetsi',
+    roleDescription: 'Tsamaya mo Gaborone bonolo',
+    driverDescription: 'Laola sekgwa sa gago le maeto'
+  },
+  onboarding: {
+    screen1Title: 'Bona Dipalangwang Bonolo',
+    screen1Subtitle: 'Bona ditekesi, dikombi, le mabese gaufi le wena',
+    screen2Title: 'Itse Ditsela le Ditshenyegelo',
+    screen2Subtitle: 'Bona ditsela, diemelo, le ditshenyegelo ka Pula',
+    screen3Title: 'Nna Sikhuro o Laola',
+    screen3Subtitle: 'Bona ditulo, tshubego, le dirisa dikarolo tsa pabalesego'
+  },
+  home: {
+    findRoute: 'Batla Tsela',
+    nearby: 'Dipalangwang tse Gaufi',
+    fares: 'Ditshenyegelo',
+    traffic: 'Tshubego',
+    requestTaxi: 'Kwala Tekesi',
+    favorites: 'Tse o di Ratang',
+    searchPlaceholder: 'O ya kae?',
+    currentLocation: 'Kwa o Leng Gona'
+  },
+  route: {
+    from: 'Go tswa',
+    to: 'Go ya',
+    fastest: 'E e Kapia',
+    cheapest: 'E e sa Turang',
+    taxi: 'Tekesi',
+    combi: 'Kombi',
+    bus: 'Bese',
+    specialTaxi: 'Tekesi e Kgethegileng',
+    travelTime: 'Nako ya maeto',
+    fare: 'Tshelete',
+    seatsAvailable: 'ditulo tse di leng teng',
+    startNavigation: 'Simolola go Tsamaya',
+    walking: 'Tsamaya ka dinao'
+  },
+  bus: {
+    bookBus: 'Kwala Bese',
+    selectSeat: 'Itlhopha Setulo',
+    bestAvailable: 'Se se siameng',
+    confirmation: 'Netefatso ya Kwadiso',
+    qrCode: 'Khoutu ya QR',
+    departureTime: 'Nako ya go Tsamaya',
+    seatNumber: 'Nomoro ya Setulo'
+  },
+  safety: {
+    safetyMode: 'Mokgwa wa Pabalesego',
+    shareTrip: 'Abelana Lefelo la Gago',
+    shareDescription: 'Ba o ba itseng ba tla amogela molaetsa ka sehokela sa go go latela',
+    addContact: 'Tsenya Mo o Moitseng',
+    sos: 'EMERENGENSENG SOS',
+    sosHold: 'Tshwara metsotso e 3 go simolola',
+    sosActive: 'Kgang ya Emerengenseng e rometswe',
+    imSafe: 'Ke Sikhuro - Tlogela Emerengenseng'
+  },
+  profile: {
+    profile: 'Porofaele',
+    settings: 'Ditlhopho',
+    language: 'Puo',
+    darkMode: 'Mokgwa o Montsho',
+    notifications: 'Ditsibo',
+    tripHistory: 'Maeto a a Fetileng',
+    savedPlaces: 'Mafelo a a Bolokilweng',
+    favoriteRoutes: 'Ditsela Tse o di Ratang',
+    help: 'Thuso le Tshegetso',
+    privacy: 'Molao wa Sephiri',
+    terms: 'Melaotheo ya Tirelo'
+  },
+  errors: {
+    network: 'Phoso ya maranyane. Tlhase gape.',
+    invalidEmail: 'Tsenya imeile e e siameng',
+    invalidPhone: 'Tsenya nomoro ya mopitsi e e siameng',
+    passwordMismatch: 'Diphitlho ga di tsamaisane',
+    passwordTooShort: 'Phitlho e tshwanetse go nna ditlhaka tse di fetang 6',
+    loginFailed: 'Go tsena go gadimile. Tlhase gape.',
+    signupFailed: 'Go ikwadisa go gadimile. Tlhase gape.',
+    sessionExpired: 'Nako ya tsena e fedile. Tsena gape.'
+  }
+};
