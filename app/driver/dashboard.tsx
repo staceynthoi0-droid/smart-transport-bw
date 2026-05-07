@@ -58,9 +58,12 @@ export default function DriverDashboard() {
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>{profile?.full_name || user?.email || 'Driver'}</Text>
               <Text style={styles.profileMeta}>{profile?.phone || 'No phone added'} - Driver</Text>
+              <Text style={styles.profileMeta}>Plate: {profile?.plate_number || 'Not added'}</Text>
+              <Text style={styles.profileMeta}>Last serviced: {profile?.last_serviced || 'Not added'}</Text>
             </View>
             <TouchableOpacity style={styles.profileEditButton} onPress={() => router.push('/profile/edit')}>
               <Ionicons name="create-outline" size={20} color={Colors.primary} />
+              <Text style={styles.profileEditText}>Edit</Text>
             </TouchableOpacity>
           </View>
 
@@ -170,7 +173,8 @@ const styles = StyleSheet.create({
   profileInfo: { flex: 1 },
   profileName: { color: Colors.text, fontSize: 17, fontWeight: '800' },
   profileMeta: { color: Colors.textSecondary, fontSize: 12, marginTop: 3 },
-  profileEditButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.primary + '12', alignItems: 'center', justifyContent: 'center' },
+  profileEditButton: { minWidth: 56, minHeight: 40, borderRadius: 8, backgroundColor: Colors.primary + '12', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 },
+  profileEditText: { color: Colors.primary, fontSize: 11, fontWeight: '800', marginTop: 1 },
   quickActions: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   quickAction: { flex: 1, minHeight: 74, backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 6 },
   quickActionText: { color: Colors.text, fontSize: 11, fontWeight: '800', textAlign: 'center' },

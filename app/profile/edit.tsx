@@ -17,7 +17,10 @@ export default function EditProfileScreen() {
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [phone, setPhone] = useState(profile?.phone || '');
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
+  const [plateNumber, setPlateNumber] = useState(profile?.plate_number || '');
+  const [lastServiced, setLastServiced] = useState(profile?.last_serviced || '');
   const [saving, setSaving] = useState(false);
+  const isDriver = profile?.role === 'driver';
 
   const chooseImage = async () => {
     let ImagePicker: ImagePickerModule | null = null;
@@ -59,13 +62,19 @@ export default function EditProfileScreen() {
       full_name: fullName.trim(),
       phone: phone.trim() || null,
       avatar_url: avatarUrl.trim() || null,
+      ...(isDriver
+        ? {
+          plate_number: plateNumber.trim() || null,
+          last_serviced: lastServiced.trim() || null,
+        }
+        : {}),
     });
     setSaving(false);
     if (error) {
       Alert.alert('Could not update profile', error.message);
       return;
     }
-    Alert.alert('Profile updated', 'Your commuter profile has been saved.', [
+    Alert.alert('Profile updated', isDriver ? 'Your driver profile has been saved.' : 'Your passenger profile has been saved.', [
       { text: 'OK', onPress: () => router.back() },
     ]);
   };
@@ -99,6 +108,18 @@ export default function EditProfileScreen() {
       <TextInput style={styles.input} value={avatarUrl} onChangeText={setAvatarUrl} placeholder="https://example.com/photo.jpg" autoCapitalize="none" placeholderTextColor={Colors.textSecondary} />
       <Text style={styles.helpText}>Device upload uses expo-image-picker when installed. The URL field is a working fallback for web and offline demos.</Text>
 
+      {isDriver ? (
+        <>
+          <Text style={styles.sectionTitle}>Vehicle Details</Text>
+
+          <Text style={styles.label}>Car Plate Number</Text>
+          <TextInput style={styles.input} value={plateNumber} onChangeText={setPlateNumber} placeholder="B 321 DEM" autoCapitalize="characters" placeholderTextColor={Colors.textSecondary} />
+
+          <Text style={styles.label}>Car Last Serviced</Text>
+          <TextInput style={styles.input} value={lastServiced} onChangeText={setLastServiced} placeholder="YYYY-MM-DD" placeholderTextColor={Colors.textSecondary} />
+        </>
+      ) : null}
+
       <TouchableOpacity style={styles.saveButton} onPress={saveProfile} disabled={saving}>
         <Text style={styles.saveText}>{saving ? 'Saving...' : 'Save Profile'}</Text>
       </TouchableOpacity>
@@ -118,6 +139,7 @@ const styles = StyleSheet.create({
   input: { backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, color: Colors.text, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, marginBottom: 14 },
   disabledInput: { color: Colors.textSecondary, backgroundColor: Colors.border + '55' },
   helpText: { color: Colors.textSecondary, fontSize: 12, lineHeight: 17, marginTop: -6, marginBottom: 16 },
+  sectionTitle: { color: Colors.text, fontSize: 18, fontWeight: '800', marginBottom: 14, marginTop: 4 },
   saveButton: { backgroundColor: Colors.primary, minHeight: 52, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   saveText: { color: '#FFF', fontWeight: '800', fontSize: 16 },
 });

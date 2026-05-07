@@ -102,7 +102,7 @@ export default function LoginScreen() {
           <View style={styles.roleContainer}>
             <TouchableOpacity style={[styles.roleButton, role === 'commuter' && styles.roleSelected]} onPress={() => setRole('commuter')}>
               <Ionicons name="person-outline" size={18} color={role === 'commuter' ? '#FFF' : Colors.text} />
-              <Text style={[styles.roleText, role === 'commuter' && styles.roleTextSelected]}>User</Text>
+              <Text style={[styles.roleText, role === 'commuter' && styles.roleTextSelected]}>Passenger</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.roleButton, role === 'driver' && styles.roleSelected]} onPress={() => setRole('driver')}>
               <Ionicons name="car-outline" size={18} color={role === 'driver' ? '#FFF' : Colors.text} />

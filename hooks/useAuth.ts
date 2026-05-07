@@ -15,6 +15,8 @@ type DemoProfile = {
   phone: string | null;
   role: UserRole;
   avatar_url: string | null;
+  plate_number?: string | null;
+  last_serviced?: string | null;
 };
 
 type AuthResult = Promise<{ error: Error | null }>;
@@ -39,6 +41,8 @@ const demoProfile: DemoProfile = {
   phone: '+267 7000 0000',
   role: 'commuter',
   avatar_url: null,
+  plate_number: null,
+  last_serviced: null,
 };
 
 let authState: AuthState = {
@@ -73,6 +77,8 @@ const buildDemoAuthState = (email: string, selectedRole?: UserRole): AuthState =
       phone: role === 'driver' ? '+267 7222 0002' : '+267 7111 0001',
       role,
       avatar_url: null,
+      plate_number: role === 'driver' ? 'B 321 DEM' : null,
+      last_serviced: role === 'driver' ? '2026-04-15' : null,
     },
   };
 };
@@ -101,6 +107,8 @@ export function useAuth() {
       phone: additionalData?.phone || null,
       role,
       avatar_url: null,
+      plate_number: role === 'driver' ? additionalData?.plate_number || null : null,
+      last_serviced: role === 'driver' ? additionalData?.last_serviced || null : null,
     };
     setAuthState({ user: nextUser, profile: nextProfile });
     return { error: null };
@@ -127,18 +135,22 @@ export function useAuth() {
         phone: role === 'driver' ? '+267 7222 0002' : '+267 7111 0001',
         role,
         avatar_url: null,
+        plate_number: role === 'driver' ? 'B 321 DEM' : null,
+        last_serviced: role === 'driver' ? '2026-04-15' : null,
       },
     });
     return { data: null, error: null };
   };
 
-  const updateProfile = async (updates: { full_name?: string | null; phone?: string | null; avatar_url?: string | null }) => {
+  const updateProfile = async (updates: { full_name?: string | null; phone?: string | null; avatar_url?: string | null; plate_number?: string | null; last_serviced?: string | null }) => {
     if (!profile) return { data: null, error: new Error('No demo profile is active.') };
     const nextProfile = {
       ...profile,
       full_name: updates.full_name ?? profile.full_name,
       phone: updates.phone ?? profile.phone,
       avatar_url: updates.avatar_url ?? profile.avatar_url,
+      plate_number: updates.plate_number ?? profile.plate_number,
+      last_serviced: updates.last_serviced ?? profile.last_serviced,
     };
     setAuthState({ user, profile: nextProfile });
     return { data: nextProfile, error: null };
