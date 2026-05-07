@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
-import { DEMO_ACCOUNTS } from '@/constants/demo-accounts';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LoginScreen() {
@@ -40,26 +38,6 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Smart Transport BW</Text>
         <Text style={styles.subtitle}>{t.auth.loginSubtitle}</Text>
-
-        <View style={styles.demoPanel}>
-          <Text style={styles.demoTitle}>Demo Logins</Text>
-          {DEMO_ACCOUNTS.map(account => (
-            <TouchableOpacity
-              key={account.email}
-              style={styles.demoButton}
-              onPress={() => {
-                setEmail(account.email);
-                setPassword(account.password);
-              }}
-            >
-              <Ionicons name={account.role === 'driver' ? 'bus-outline' : 'walk-outline'} size={18} color={Colors.primary} />
-              <View style={styles.demoInfo}>
-                <Text style={styles.demoLabel}>{account.label}</Text>
-                <Text style={styles.demoCreds}>{account.email} / {account.password}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
 
         <TextInput
           style={styles.input}
