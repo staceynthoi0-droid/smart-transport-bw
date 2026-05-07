@@ -1,0 +1,18 @@
+export const Colors = {
+  primary: '#1E88E5',
+  primaryDark: '#1565C0',
+  primaryLight: '#64B5F6',
+  secondary: '#FFC107',
+  background: '#F5F7FA',
+  surface: '#FFFFFF',
+  text: '#1A1A2E',
+  textSecondary: '#6B7280',
+  border: '#E5E7EB',
+  success: '#4CAF50',
+  warning: '#FF9800',
+  danger: '#F44336',
+  sos: '#D32F2F',
+  seatAvailable: '#4CAF50',
+  seatOccupied: '#E0E0E0',
+  seatSelected: '#1E88E5',
+};

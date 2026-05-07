@@ -1,0 +1,13 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
+  "files.associations": { "*.sql": "sql" },
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "mtxr.sqltools",
+    "expo.vscode-expo-tools"
+  ]
+}

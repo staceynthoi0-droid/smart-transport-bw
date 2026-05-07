@@ -1,0 +1,21 @@
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import MapView from '@maplibre/maplibre-react-native';
+
+export default function FreeMap() {
+  return (
+    <View style={styles.container}>
+      <MapView
+        style={styles.map}
+        mapStyle="https://tiles.stadiamaps.com/styles/alidade_smooth.json"
+        centerCoordinate={[25.9083, -24.6547]}
+        zoomLevel={12}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  map: { flex: 1 }
+});
