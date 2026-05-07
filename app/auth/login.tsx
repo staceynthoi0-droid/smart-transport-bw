@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useAuth, UserRole } from '@/hooks/useAuth';
+import { DEMO_ACCOUNTS } from '@/constants/demo-accounts';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -50,6 +51,27 @@ export default function LoginScreen() {
         <View style={styles.roleContainer}>
           <RoleCard role="commuter" active={role === 'commuter'} icon="walk-outline" title="Commuter" onPress={() => setRole('commuter')} />
           <RoleCard role="driver" active={role === 'driver'} icon="bus-outline" title="Driver" onPress={() => setRole('driver')} />
+        </View>
+
+        <View style={styles.demoPanel}>
+          <Text style={styles.demoTitle}>Demo Logins</Text>
+          {DEMO_ACCOUNTS.map(account => (
+            <TouchableOpacity
+              key={account.email}
+              style={styles.demoButton}
+              onPress={() => {
+                setRole(account.role);
+                setEmail(account.email);
+                setPassword(account.password);
+              }}
+            >
+              <Ionicons name={account.role === 'driver' ? 'bus-outline' : 'walk-outline'} size={18} color={Colors.primary} />
+              <View style={styles.demoInfo}>
+                <Text style={styles.demoLabel}>{account.label}</Text>
+                <Text style={styles.demoCreds}>{account.email} / {account.password}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
 
         <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={Colors.textSecondary} />
@@ -107,6 +129,12 @@ const styles = StyleSheet.create({
   roleSelected: { borderColor: Colors.primary, backgroundColor: Colors.primary + '12' },
   roleText: { fontSize: 15, fontWeight: '800', color: Colors.text },
   roleTextSelected: { color: Colors.primary },
+  demoPanel: { backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, padding: 12, marginBottom: 16 },
+  demoTitle: { color: Colors.text, fontSize: 14, fontWeight: '800', marginBottom: 8 },
+  demoButton: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9 },
+  demoInfo: { flex: 1 },
+  demoLabel: { color: Colors.text, fontSize: 13, fontWeight: '800' },
+  demoCreds: { color: Colors.textSecondary, fontSize: 11, marginTop: 2 },
   input: { backgroundColor: Colors.surface, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, borderWidth: 1, borderColor: Colors.border, marginBottom: 14, color: Colors.text },
   button: { backgroundColor: Colors.primary, borderRadius: 8, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
   buttonText: { color: '#FFF', fontWeight: '800', fontSize: 16 },
