@@ -197,6 +197,13 @@ function RouteResultCard({ route, compact = false }: { route: RouteOption; compa
         <View style={{ flex: 1 }}>
           <Text style={styles.routeResultTitle}>{route.title}</Text>
           <Text style={styles.routeResultMeta}>{route.type === 'multi-leg' ? 'Multi-leg' : 'Direct'} - P{route.totalFare.toFixed(2)} - {route.totalTime} min</Text>
+          {(route.vehicleType || route.seatsAvailable || route.traffic) && (
+            <View style={styles.routePills}>
+              {route.vehicleType && <Text style={styles.routePill}>{route.vehicleType === 'specialTaxi' ? 'Special Taxi' : route.vehicleType}</Text>}
+              {route.seatsAvailable && <Text style={styles.routePill}>Seats {route.seatsAvailable}</Text>}
+              {route.traffic && <Text style={[styles.routePill, route.traffic === 'Heavy' && styles.heavyPill, route.traffic === 'Clear' && styles.clearPill]}>{route.traffic}</Text>}
+            </View>
+          )}
         </View>
         <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={Colors.textSecondary} />
       </TouchableOpacity>
@@ -257,6 +264,10 @@ const styles = StyleSheet.create({
   routeResultHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   routeResultTitle: { fontSize: 15, fontWeight: '800', color: Colors.text },
   routeResultMeta: { fontSize: 13, color: Colors.primary, fontWeight: '800', marginTop: 4 },
+  routePills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
+  routePill: { overflow: 'hidden', backgroundColor: Colors.primary + '12', color: Colors.primary, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, fontSize: 11, fontWeight: '800', textTransform: 'capitalize' },
+  heavyPill: { backgroundColor: Colors.danger + '12', color: Colors.danger },
+  clearPill: { backgroundColor: Colors.success + '12', color: Colors.success },
   segmentRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderTopWidth: 1, borderTopColor: Colors.border, paddingTop: 10, marginTop: 10 },
   segmentNumber: { width: 26, height: 26, borderRadius: 13, backgroundColor: Colors.primary + '14', alignItems: 'center', justifyContent: 'center' },
   segmentNumberText: { color: Colors.primary, fontSize: 12, fontWeight: '800' },
