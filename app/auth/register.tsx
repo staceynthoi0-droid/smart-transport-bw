@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import * as Linking from 'expo-linking';
-import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { signInWithProvider } = useAuth();
+  const { signUp, signInWithProvider } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -37,30 +35,14 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password: password,
-      options: {
-        emailRedirectTo: Linking.createURL('/redirect'),
-        data: {
-          full_name: fullName,
-          phone: phone,
-          role: role
-        }
-      }
-    });
-
+    const { error } = await signUp(email.trim(), password, fullName, role, { phone });
     if (error) {
       Alert.alert('Signup Failed', error.message);
-    } else if (data?.user) {
-      Alert.alert(
-        'Success', 
-        'Account created! Please check your email to confirm your account.',
-        [{ text: 'OK', onPress: () => router.push('/auth/login') }]
-      );
+    } else {
+      Alert.alert('Success', 'Demo account created.', [
+        { text: 'OK', onPress: () => router.replace('/(tabs)') },
+      ]);
     }
-    
     setLoading(false);
   }
 
@@ -69,6 +51,8 @@ export default function RegisterScreen() {
     const { error } = await signInWithProvider(provider);
     if (error) {
       Alert.alert('Sign Up Failed', error.message);
+    } else {
+      router.replace('/(tabs)');
     }
     setProviderLoading(null);
   }

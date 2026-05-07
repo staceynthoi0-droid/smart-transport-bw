@@ -1,152 +1,113 @@
-import { useEffect, useState } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { Linking as RNLinking } from 'react-native';
-import * as ExpoLinking from 'expo-linking';
-import { supabase } from '@/lib/supabase';
+import { useState } from 'react';
 
 export type UserRole = 'commuter' | 'driver';
 
-async function getOrCreateProfile(currentUser: User) {
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
-  if (data || (error && error.code !== 'PGRST116')) return data;
+type DemoUser = {
+  id: string;
+  email: string;
+  user_metadata?: Record<string, unknown>;
+};
 
-  const metadata = currentUser.user_metadata ?? {};
-  const fallbackProfile = {
-    id: currentUser.id,
-    full_name: metadata.full_name || metadata.name || currentUser.email?.split('@')[0] || 'Commuter',
-    phone: metadata.phone || null,
-    role: metadata.role === 'driver' ? 'driver' : 'commuter',
-    avatar_url: metadata.avatar_url || metadata.picture || null,
-  };
+type DemoProfile = {
+  id: string;
+  full_name: string;
+  phone: string | null;
+  role: UserRole;
+  avatar_url: string | null;
+};
 
-  const { data: createdProfile } = await (supabase.from('profiles') as any)
-    .upsert(fallbackProfile)
-    .select('*')
-    .single();
+type AuthResult = Promise<{ error: Error | null }>;
+type ProviderResult = Promise<{ data: null; error: Error | null }>;
 
-  return createdProfile ?? fallbackProfile;
-}
+const demoUser: DemoUser = {
+  id: 'mock-user-123',
+  email: 'demo@smarttransport.bw',
+  user_metadata: {
+    full_name: 'Demo User',
+    role: 'commuter',
+  },
+};
+
+const demoProfile: DemoProfile = {
+  id: 'mock-user-123',
+  full_name: 'Demo User',
+  phone: '+267 7000 0000',
+  role: 'commuter',
+  avatar_url: null,
+};
 
 export function useAuth() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<DemoUser | null>(demoUser);
+  const [profile, setProfile] = useState<DemoProfile | null>(demoProfile);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const profileData = await getOrCreateProfile(session.user);
-        setProfile(profileData);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    });
-
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const profileData = await getOrCreateProfile(session.user);
-        setProfile(profileData);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const handleUrl = async (url: string) => {
-      const parsed = ExpoLinking.parse(url);
-      const code = parsed.queryParams?.code;
-      if (typeof code === 'string') {
-        await supabase.auth.exchangeCodeForSession(code);
-      }
-    };
-
-    RNLinking.getInitialURL().then((url) => {
-      if (url) handleUrl(url);
-    });
-    const subscription = RNLinking.addEventListener('url', ({ url }) => handleUrl(url));
-
-    return () => subscription.remove();
-  }, []);
-
-  const signUp = async (email: string, password: string, fullName: string, role: UserRole, additionalData?: any) => {
-    const { data, error } = await supabase.auth.signUp({
+  const signUp = async (email: string, _password: string, fullName: string, role: UserRole, additionalData?: any): AuthResult => {
+    const nextUser = {
+      id: 'mock-user-456',
       email,
-      password,
-      options: {
-        emailRedirectTo: ExpoLinking.createURL('/redirect'),
-        data: { full_name: fullName, role, ...additionalData },
-      },
-    });
-    if (error) return { error };
-    if (data.user) {
-      const profileData = {
-        id: data.user.id,
-        full_name: fullName,
-        role,
-        phone: additionalData?.phone || null,
-        operating_base: additionalData?.operating_base || null,
-        ...additionalData,
-      };
-      const { error: profileError } = await supabase.from('profiles').upsert(profileData);
-      if (profileError) return { error: profileError };
-      setProfile(profileData);
-    }
+      user_metadata: { full_name: fullName, role },
+    };
+    const nextProfile = {
+      id: nextUser.id,
+      full_name: fullName,
+      phone: additionalData?.phone || null,
+      role,
+      avatar_url: null,
+    };
+    setUser(nextUser);
+    setProfile(nextProfile);
     return { error: null };
   };
 
-  const refreshProfile = async () => {
-    if (!user) return null;
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-    if (!error) setProfile(data);
-    return { data, error };
+  const signIn = async (email: string, _password: string): AuthResult => {
+    setUser({
+      ...demoUser,
+      email,
+    });
+    setProfile(demoProfile);
+    return { error: null };
+  };
+
+  const signInWithProvider = async (provider: 'google' | 'facebook'): ProviderResult => {
+    setUser({
+      ...demoUser,
+      email: `${provider}.demo@smarttransport.bw`,
+    });
+    setProfile({
+      ...demoProfile,
+      full_name: provider === 'google' ? 'Google Demo User' : 'Facebook Demo User',
+    });
+    return { data: null, error: null };
   };
 
   const updateProfile = async (updates: { full_name?: string | null; phone?: string | null; avatar_url?: string | null }) => {
-    if (!user) return { error: new Error('You must be signed in to update your profile.') };
+    if (!profile) return { data: null, error: new Error('No demo profile is active.') };
     const nextProfile = {
-      id: user.id,
-      full_name: updates.full_name ?? profile?.full_name ?? null,
-      phone: updates.phone ?? profile?.phone ?? null,
-      role: profile?.role ?? 'commuter',
-      avatar_url: updates.avatar_url ?? profile?.avatar_url ?? null,
+      ...profile,
+      full_name: updates.full_name ?? profile.full_name,
+      phone: updates.phone ?? profile.phone,
+      avatar_url: updates.avatar_url ?? profile.avatar_url,
     };
-    const { data, error } = await (supabase.from('profiles') as any).upsert(nextProfile).select('*').single();
-    if (!error) setProfile(data ?? nextProfile);
-    return { data, error };
+    setProfile(nextProfile);
+    return { data: nextProfile, error: null };
   };
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
-  };
-
-  const signInWithProvider = async (provider: 'google' | 'facebook') => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: ExpoLinking.createURL('/redirect'),
-        skipBrowserRedirect: true,
-      },
-    });
-    if (!error && data.url) {
-      await RNLinking.openURL(data.url);
-    }
-    return { data, error };
-  };
+  const refreshProfile = async () => ({ data: profile, error: null });
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    setUser(demoUser);
+    setProfile(demoProfile);
   };
 
-  return { session, user, profile, loading, signUp, signIn, signInWithProvider, signOut, refreshProfile, updateProfile };
+  return {
+    session: { user },
+    user,
+    profile,
+    loading: false,
+    signUp,
+    signIn,
+    signInWithProvider,
+    signOut,
+    refreshProfile,
+    updateProfile,
+  };
 }

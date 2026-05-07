@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signInWithProvider } = useAuth();
+  const { signIn, signInWithProvider } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,20 +20,13 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password: password,
-    });
-
+    const { error } = await signIn(email.trim(), password);
     if (error) {
       Alert.alert('Login Failed', error.message);
       console.error('Login error:', error.message);
     } else {
-      // Success - RootLayout will redirect based on authenticated user profile
-      console.log('Login successful');
+      router.replace('/(tabs)');
     }
-    
     setLoading(false);
   }
 
@@ -43,6 +35,8 @@ export default function LoginScreen() {
     const { error } = await signInWithProvider(provider);
     if (error) {
       Alert.alert('Sign In Failed', error.message);
+    } else {
+      router.replace('/(tabs)');
     }
     setProviderLoading(null);
   }
