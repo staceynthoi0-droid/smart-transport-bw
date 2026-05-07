@@ -108,7 +108,7 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Popular Routes</Text>
+        <Text style={styles.sectionTitle}>Popular Places</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
           {[...favourites, ...POPULAR_PLACES.slice(0, 5)].filter((v, i, arr) => arr.indexOf(v) === i).map(place => (
             <TouchableOpacity key={place} style={styles.chip} onPress={() => { setTo(place); handleSearch(place, from); }}>
@@ -146,7 +146,7 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Multi-leg Route Examples</Text>
+        <Text style={styles.sectionTitle}>Popular Routes</Text>
         {MULTI_LEG_ROUTE_OPTIONS.slice(0, 3).map(route => <RouteResultCard key={route.id} route={route} compact />)}
       </View>
 
