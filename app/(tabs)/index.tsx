@@ -164,7 +164,7 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Multi-leg Example</Text>
+        <Text style={styles.sectionTitle}>Multi-leg</Text>
         {MOCK_MULTI_LEG_TRIP.map(leg => (
           <View key={leg.id} style={styles.stepRow}>
             <Ionicons name="swap-horizontal-outline" size={18} color={Colors.primary} />

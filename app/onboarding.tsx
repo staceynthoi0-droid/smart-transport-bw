@@ -31,15 +31,33 @@ export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentData = onboardingData[currentIndex];
   const isFinal = currentIndex === onboardingData.length - 1;
+  const canGoBack = currentIndex > 0;
 
   const finish = () => router.replace('/auth/login');
   const handleNext = () => (isFinal ? finish() : setCurrentIndex(currentIndex + 1));
+  const handleBack = () => {
+    if (canGoBack) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.skipButton} onPress={finish}>
-        <Text style={styles.skipText}>Skip</Text>
-      </TouchableOpacity>
+      <View style={styles.topBar}>
+        <TouchableOpacity
+          style={[styles.backButton, !canGoBack && styles.backButtonHidden]}
+          onPress={handleBack}
+          disabled={!canGoBack}
+          accessibilityLabel="Back to previous onboarding screen"
+        >
+          <Ionicons name="arrow-back" size={21} color={Colors.text} />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.skipButton} onPress={finish}>
+          <Text style={styles.skipText}>Skip</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.content}>
         <View style={[styles.illustration, { width: Math.min(width - 72, 320) }]}>
@@ -70,10 +88,21 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={[styles.footerBackButton, !canGoBack && styles.footerBackDisabled]}
+            onPress={handleBack}
+            disabled={!canGoBack}
+          >
+            <Ionicons name="chevron-back" size={20} color={canGoBack ? Colors.primary : Colors.textSecondary} />
+            <Text style={[styles.footerBackText, !canGoBack && styles.footerBackTextDisabled]}>Back</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.nextText}>{isFinal ? 'Get Started' : 'Next'}</Text>
           <Ionicons name={isFinal ? 'checkmark' : 'arrow-forward'} size={20} color="#FFF" />
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -81,7 +110,11 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background, padding: 24 },
-  skipButton: { alignSelf: 'flex-end', paddingVertical: 8, paddingHorizontal: 6 },
+  topBar: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  backButton: { minHeight: 40, flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingRight: 10 },
+  backButtonHidden: { opacity: 0 },
+  backText: { fontSize: 15, color: Colors.text, fontWeight: '700' },
+  skipButton: { paddingVertical: 8, paddingHorizontal: 6 },
   skipText: { fontSize: 15, color: Colors.textSecondary, fontWeight: '600' },
   content: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   illustration: { height: 300, backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
@@ -100,6 +133,11 @@ const styles = StyleSheet.create({
   indicators: { flexDirection: 'row', justifyContent: 'center', gap: 8 },
   dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: Colors.border },
   activeDot: { width: 28, backgroundColor: Colors.primary },
-  nextButton: { backgroundColor: Colors.primary, minHeight: 52, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  buttonRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  footerBackButton: { width: 104, minHeight: 52, borderRadius: 8, borderWidth: 1.5, borderColor: Colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: Colors.surface },
+  footerBackDisabled: { borderColor: Colors.border, backgroundColor: Colors.background },
+  footerBackText: { fontSize: 15, color: Colors.primary, fontWeight: '800' },
+  footerBackTextDisabled: { color: Colors.textSecondary },
+  nextButton: { flex: 1, backgroundColor: Colors.primary, minHeight: 52, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   nextText: { fontSize: 16, color: '#FFF', fontWeight: '800' },
 });
