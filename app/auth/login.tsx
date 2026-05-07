@@ -7,7 +7,7 @@ import { useAuth, UserRole } from '@/hooks/useAuth';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn, continueAsGuest } = useAuth();
+  const { signIn, signInWithProvider, continueAsGuest } = useAuth();
   const [role, setRole] = useState<UserRole>('commuter');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,6 +32,15 @@ export default function LoginScreen() {
     }
   };
 
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    setLoading(true);
+    const { error } = await signInWithProvider(provider);
+    setLoading(false);
+    if (error) {
+      Alert.alert('Social Login Failed', `${provider === 'google' ? 'Google' : 'Facebook'} login is not available yet. Check that this provider is enabled in Supabase.`);
+    }
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
@@ -49,6 +58,23 @@ export default function LoginScreen() {
         <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
           <Text style={styles.buttonText}>{loading ? 'Signing in...' : role === 'driver' ? 'Sign In as Driver' : 'Sign In as Commuter'}</Text>
         </TouchableOpacity>
+
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <View style={styles.socialRow}>
+          <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('google')} disabled={loading}>
+            <Ionicons name="logo-google" size={20} color="#DB4437" />
+            <Text style={styles.socialText}>Google</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('facebook')} disabled={loading}>
+            <Ionicons name="logo-facebook" size={20} color="#1877F2" />
+            <Text style={styles.socialText}>Facebook</Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity onPress={() => router.push('/auth/register')}>
           <Text style={styles.link}>Do not have an account? <Text style={styles.linkBold}>Sign Up</Text></Text>
@@ -84,6 +110,12 @@ const styles = StyleSheet.create({
   input: { backgroundColor: Colors.surface, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, borderWidth: 1, borderColor: Colors.border, marginBottom: 14, color: Colors.text },
   button: { backgroundColor: Colors.primary, borderRadius: 8, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
   buttonText: { color: '#FFF', fontWeight: '800', fontSize: 16 },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 20, marginBottom: 14 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText: { color: Colors.textSecondary, fontSize: 13, fontWeight: '700' },
+  socialRow: { flexDirection: 'row', gap: 12 },
+  socialButton: { flex: 1, minHeight: 48, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.surface, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  socialText: { color: Colors.text, fontWeight: '800', fontSize: 14 },
   link: { textAlign: 'center', marginTop: 20, fontSize: 14, color: Colors.textSecondary },
   linkBold: { color: Colors.primary, fontWeight: '700' },
   guestButton: { marginTop: 24, alignItems: 'center' },

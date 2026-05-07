@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Switch, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { MOCK_ROUTES } from '@/constants/mock-data';
 import EmptyState from '@/components/EmptyState';
+import { useAuth } from '@/hooks/useAuth';
 
 type PassengerRequest = {
   id: string;
@@ -14,6 +16,8 @@ type PassengerRequest = {
 };
 
 export default function DriverDashboard() {
+  const router = useRouter();
+  const { user, profile, signOut } = useAuth();
   const [online, setOnline] = useState(true);
   const [activeRouteId, setActiveRouteId] = useState(MOCK_ROUTES[0].id);
   const [seats, setSeats] = useState(8);
@@ -43,6 +47,38 @@ export default function DriverDashboard() {
       contentContainerStyle={styles.content}
       ListHeaderComponent={
         <>
+          <View style={styles.profileCard}>
+            <View style={styles.avatar}>
+              {profile?.avatar_url ? (
+                <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
+              ) : (
+                <Ionicons name="person" size={32} color={Colors.primary} />
+              )}
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>{profile?.full_name || user?.email || 'Driver'}</Text>
+              <Text style={styles.profileMeta}>{profile?.phone || 'No phone added'} - Driver</Text>
+            </View>
+            <TouchableOpacity style={styles.profileEditButton} onPress={() => router.push('/profile/edit')}>
+              <Ionicons name="create-outline" size={20} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.quickActions}>
+            <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/driver/trip-history')}>
+              <Ionicons name="time-outline" size={20} color={Colors.primary} />
+              <Text style={styles.quickActionText}>Trip History</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/driver/report-delay')}>
+              <Ionicons name="warning-outline" size={20} color={Colors.warning} />
+              <Text style={styles.quickActionText}>Report Delay</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.quickAction} onPress={() => router.push('/profile/settings')}>
+              <Ionicons name="settings-outline" size={20} color={Colors.primary} />
+              <Text style={styles.quickActionText}>Settings</Text>
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.statusCard}>
             <View>
               <Text style={styles.statusTitle}>{online ? 'Online' : 'Offline'}</Text>
@@ -115,6 +151,12 @@ export default function DriverDashboard() {
         </View>
       )}
       ListEmptyComponent={<EmptyState icon="people-outline" title="No requests" message="No passenger requests at the moment." />}
+      ListFooterComponent={
+        <TouchableOpacity style={styles.logoutButton} onPress={() => { signOut(); router.replace('/auth/login'); }}>
+          <Ionicons name="log-out-outline" size={20} color={Colors.danger} />
+          <Text style={styles.logoutText}>Sign Out</Text>
+        </TouchableOpacity>
+      }
     />
   );
 }
@@ -122,6 +164,16 @@ export default function DriverDashboard() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: 16, paddingBottom: 34 },
+  profileCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: 8, padding: 14, borderWidth: 1, borderColor: Colors.border, marginBottom: 12 },
+  avatar: { width: 58, height: 58, borderRadius: 29, backgroundColor: Colors.primary + '15', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginRight: 12 },
+  avatarImage: { width: 58, height: 58, borderRadius: 29 },
+  profileInfo: { flex: 1 },
+  profileName: { color: Colors.text, fontSize: 17, fontWeight: '800' },
+  profileMeta: { color: Colors.textSecondary, fontSize: 12, marginTop: 3 },
+  profileEditButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.primary + '12', alignItems: 'center', justifyContent: 'center' },
+  quickActions: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  quickAction: { flex: 1, minHeight: 74, backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 6 },
+  quickActionText: { color: Colors.text, fontSize: 11, fontWeight: '800', textAlign: 'center' },
   statusCard: { backgroundColor: Colors.surface, borderRadius: 8, padding: 16, borderWidth: 1, borderColor: Colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
   statusTitle: { fontSize: 20, fontWeight: '800', color: Colors.text },
   statusSub: { fontSize: 13, color: Colors.textSecondary, marginTop: 3 },
@@ -157,4 +209,6 @@ const styles = StyleSheet.create({
   badgeAccepted: { backgroundColor: Colors.success + '20' },
   badgeRejected: { backgroundColor: Colors.danger + '20' },
   requestStatusText: { fontSize: 12, fontWeight: '800', textTransform: 'capitalize' },
+  logoutButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, marginTop: 12 },
+  logoutText: { color: Colors.danger, fontWeight: '800', fontSize: 15 },
 });

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 import LocationInput from '@/components/LocationInput';
@@ -12,6 +12,7 @@ import { getFavourites, getRecentSearches, cacheRecentSearches } from '@/lib/off
 
 export default function HomeScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ from?: string; to?: string; search?: string }>();
   const { user, isGuest } = useAuth();
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -25,6 +26,16 @@ export default function HomeScreen() {
     getFavourites().then(setFavourites);
     getRecentSearches().then(setRecentSearches);
   }, []);
+
+  useEffect(() => {
+    if (params.from) setFrom(params.from);
+    if (params.to) {
+      setTo(params.to);
+      if (params.search === 'true') {
+        handleSearch(params.to);
+      }
+    }
+  }, [params.from, params.to, params.search]);
 
   const suggestions = useMemo(() => {
     const q = to.trim();

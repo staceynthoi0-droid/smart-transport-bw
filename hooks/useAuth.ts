@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+import * as Linking from 'expo-linking';
 import { supabase } from '@/lib/supabase';
 
 export type UserRole = 'commuter' | 'driver';
@@ -45,7 +46,7 @@ export function useAuth() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: { data: { full_name: fullName, role, ...additionalData } },
     });
     if (error) return { error };
     if (data.user) {
@@ -57,15 +58,48 @@ export function useAuth() {
         operating_base: additionalData?.operating_base || null,
         ...additionalData,
       };
-      const { error: profileError } = await supabase.from('profiles').insert(profileData);
+      const { error: profileError } = await supabase.from('profiles').upsert(profileData);
       if (profileError) return { error: profileError };
+      setProfile(profileData);
     }
     return { error: null };
+  };
+
+  const refreshProfile = async () => {
+    if (!user) return null;
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    if (!error) setProfile(data);
+    return { data, error };
+  };
+
+  const updateProfile = async (updates: { full_name?: string | null; phone?: string | null; avatar_url?: string | null }) => {
+    if (!user) return { error: new Error('You must be signed in to update your profile.') };
+    const nextProfile = {
+      id: user.id,
+      full_name: updates.full_name ?? profile?.full_name ?? null,
+      phone: updates.phone ?? profile?.phone ?? null,
+      role: profile?.role ?? 'commuter',
+      avatar_url: updates.avatar_url ?? profile?.avatar_url ?? null,
+    };
+    const { data, error } = await (supabase.from('profiles') as any).upsert(nextProfile).select('*').single();
+    if (!error) setProfile(data ?? nextProfile);
+    return { data, error };
   };
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error };
+  };
+
+  const signInWithProvider = async (provider: 'google' | 'facebook') => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: Linking.createURL('/redirect'),
+        skipBrowserRedirect: false,
+      },
+    });
+    return { data, error };
   };
 
   const signOut = async () => {
@@ -78,5 +112,5 @@ export function useAuth() {
     setLoading(false);
   };
 
-  return { session, user, profile, loading, isGuest, signUp, signIn, signOut, continueAsGuest };
+  return { session, user, profile, loading, isGuest, signUp, signIn, signInWithProvider, signOut, continueAsGuest, refreshProfile, updateProfile };
 }

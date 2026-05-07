@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
@@ -26,11 +26,14 @@ export default function ProfileScreen() {
   }
 
   const menuItems = [
-    { icon: 'ticket-outline' as const, label: 'Trip History', onPress: () => Alert.alert('Trip History', 'Recent trips and Repeat Trip are available on Home.') },
-    { icon: 'heart-outline' as const, label: 'Saved Places', onPress: () => Alert.alert('Saved Places', 'Saved rank and landmark shortcuts will sync here.') },
-    { icon: 'car-outline' as const, label: 'Driver Dashboard', onPress: () => router.push('/driver/dashboard') },
-    { icon: 'alert-circle-outline' as const, label: 'Report Transport Issue', onPress: () => Alert.alert('Report Issue', 'Unsafe driver\nIncorrect fare\nRoute problem') },
-    { icon: 'settings-outline' as const, label: 'Settings', onPress: () => Alert.alert('Settings', 'Coming soon') },
+    { icon: 'person-outline' as const, label: 'Edit Profile', onPress: () => router.push('/profile/edit') },
+    { icon: 'ticket-outline' as const, label: 'Trip History', onPress: () => router.push('/profile/trip-history') },
+    { icon: 'heart-outline' as const, label: 'Saved Places', onPress: () => router.push('/profile/saved-places') },
+    ...(profile?.role === 'driver'
+      ? [{ icon: 'car-outline' as const, label: 'Driver Dashboard', onPress: () => router.push('/driver/dashboard') }]
+      : []),
+    { icon: 'alert-circle-outline' as const, label: 'Report Transport Issue', onPress: () => router.push('/profile/report-issue') },
+    { icon: 'settings-outline' as const, label: 'Settings', onPress: () => router.push('/profile/settings') },
     { icon: 'help-circle-outline' as const, label: 'Help & Support', onPress: () => Alert.alert('Help', 'Contact: support@smarttransportbw.co.bw') },
   ];
 
@@ -38,9 +41,14 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.profileHeader}>
         <View style={styles.avatar}>
-          <Ionicons name="person" size={36} color={Colors.primary} />
+          {profile?.avatar_url ? (
+            <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
+          ) : (
+            <Ionicons name="person" size={36} color={Colors.primary} />
+          )}
         </View>
-        <Text style={styles.email}>{user?.email}</Text>
+        <Text style={styles.email}>{profile?.full_name || user?.email}</Text>
+        {profile?.full_name && <Text style={styles.profileEmail}>{user?.email}</Text>}
         <Text style={styles.role}>{profile?.role === 'driver' ? 'Driver' : 'Commuter'}</Text>
       </View>
 
@@ -74,7 +82,9 @@ const styles = StyleSheet.create({
   registerText: { color: Colors.primary, fontWeight: '600', fontSize: 16 },
   profileHeader: { alignItems: 'center', paddingVertical: 24 },
   avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.primary + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  avatarImage: { width: 72, height: 72, borderRadius: 36 },
   email: { fontSize: 17, fontWeight: '600', color: Colors.text },
+  profileEmail: { fontSize: 12, color: Colors.textSecondary, marginTop: 3 },
   role: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
   menu: { backgroundColor: Colors.surface, borderRadius: 16, overflow: 'hidden', marginTop: 8 },
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: Colors.border, gap: 12 },
