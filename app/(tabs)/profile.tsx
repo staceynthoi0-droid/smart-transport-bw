@@ -9,6 +9,11 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, profile, loading, signOut } = useAuth();
 
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace('/auth/login');
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -72,7 +77,7 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={() => { signOut(); }}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
         <Ionicons name="log-out-outline" size={20} color={Colors.danger} />
         <Text style={styles.logoutText}>Sign Out</Text>
       </TouchableOpacity>
