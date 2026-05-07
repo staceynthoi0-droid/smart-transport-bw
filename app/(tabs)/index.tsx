@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import LocationInput from '@/components/LocationInput';
 import SOSButton from '@/components/SOSButton';
 import { DIRECT_ROUTE_OPTIONS, FEEDBACK_REASONS, LANDMARK_HINTS, MULTI_LEG_ROUTE_OPTIONS, MOCK_TRIP_HISTORY, MOCK_TRIP_STAGES, OFFLINE_CACHE_STATUS, POPULAR_PLACES, RouteOption, findRouteOptions, fuzzyPlaceMatch } from '@/constants/mock-data';
-import { getFavourites, getRecentSearches, cacheRecentSearches } from '@/lib/offline';
+import { cacheData, getCachedData, getFavourites, getRecentSearches, cacheRecentSearches } from '@/lib/offline';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -18,12 +18,21 @@ export default function HomeScreen() {
   const [favourites, setFavourites] = useState<string[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [routeResults, setRouteResults] = useState<RouteOption[]>([]);
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
   const [tripStage] = useState(1);
+  const [nickname, setNickname] = useState('');
+  const [nicknameDraft, setNicknameDraft] = useState('');
 
   useEffect(() => {
     getFavourites().then(setFavourites);
     getRecentSearches().then(setRecentSearches);
+    getCachedData<string>('commuter_nickname', Number.MAX_SAFE_INTEGER).then(saved => {
+      if (saved) {
+        setNickname(saved);
+        setNicknameDraft(saved);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -45,6 +54,7 @@ export default function HomeScreen() {
     if (!destination.trim() && !origin.trim()) return;
     const results = findRouteOptions(origin, destination);
     setRouteResults(results);
+    setSelectedRouteId(null);
     setSearched(true);
     const searchLabel = origin.trim() ? `${origin} to ${destination}` : destination;
     const updated = [searchLabel, ...recentSearches.filter(s => s !== searchLabel)].slice(0, 10);
@@ -58,14 +68,50 @@ export default function HomeScreen() {
     handleSearch(toPlace, fromPlace);
   };
 
+  const saveNickname = async () => {
+    const clean = nicknameDraft.trim();
+    if (!clean) {
+      Alert.alert('Nickname needed', 'Please enter a nickname for your welcome message.');
+      return;
+    }
+    setNickname(clean);
+    await cacheData('commuter_nickname', clean);
+  };
+
+  const selectRoute = (route: RouteOption) => {
+    setSelectedRouteId(route.id);
+    Alert.alert(
+      'Route Selected',
+      `${route.title}\nFare: P${route.totalFare.toFixed(2)}\nTime: ${route.totalTime} min\n${route.seatsAvailable ? `Seats: ${route.seatsAvailable}` : ''}`
+    );
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.greeting}>
         <Text style={styles.greetingText}>
-          {user?.email ? 'Hello, ' + user.email.split('@')[0] : 'Welcome'}
+          {nickname ? `Welcome, ${nickname}` : user?.email ? 'Welcome, ' + user.email.split('@')[0] : 'Welcome'}
         </Text>
         <Text style={styles.greetingSub}>Cash fares, live routes, safer pickups around Gaborone.</Text>
       </View>
+
+      {!nickname && (
+        <View style={styles.nicknameCard}>
+          <Text style={styles.nicknameTitle}>What should we call you?</Text>
+          <View style={styles.nicknameRow}>
+            <TextInput
+              style={styles.nicknameInput}
+              value={nicknameDraft}
+              onChangeText={setNicknameDraft}
+              placeholder="Nickname"
+              placeholderTextColor={Colors.textSecondary}
+            />
+            <TouchableOpacity style={styles.nicknameButton} onPress={saveNickname}>
+              <Text style={styles.nicknameButtonText}>Save</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       <View style={styles.searchCard}>
         <LocationInput label="From" value={from} onChangeText={setFrom} isCurrentLocation onGpsPress={() => setFrom('Current Location')} />
@@ -140,7 +186,22 @@ export default function HomeScreen() {
               <Text style={styles.emptyMsg}>Examples: Block 6 to UB, Main Mall to UB, Phakalane to CBD.</Text>
             </View>
           ) : (
-            routeResults.map(route => <RouteResultCard key={route.id} route={route} />)
+            <>
+              {routeResults.map(route => (
+                <RouteResultCard
+                  key={route.id}
+                  route={route}
+                  selected={selectedRouteId === route.id}
+                  onSelect={() => selectRoute(route)}
+                />
+              ))}
+              {selectedRouteId && (
+                <View style={styles.selectedRouteBox}>
+                  <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
+                  <Text style={styles.selectedRouteText}>Route selected. Continue with this option when you are ready to book.</Text>
+                </View>
+              )}
+            </>
           )}
         </View>
       )}
@@ -188,11 +249,11 @@ export default function HomeScreen() {
   );
 }
 
-function RouteResultCard({ route, compact = false }: { route: RouteOption; compact?: boolean }) {
+function RouteResultCard({ route, compact = false, selected = false, onSelect }: { route: RouteOption; compact?: boolean; selected?: boolean; onSelect?: () => void }) {
   const [expanded, setExpanded] = useState(!compact);
 
   return (
-    <View style={styles.routeResultCard}>
+    <View style={[styles.routeResultCard, selected && styles.routeResultCardSelected]}>
       <TouchableOpacity style={styles.routeResultHeader} onPress={() => setExpanded(!expanded)}>
         <View style={{ flex: 1 }}>
           <Text style={styles.routeResultTitle}>{route.title}</Text>
@@ -223,6 +284,12 @@ function RouteResultCard({ route, compact = false }: { route: RouteOption; compa
           </View>
         </View>
       ))}
+      {onSelect && (
+        <TouchableOpacity style={[styles.selectRouteButton, selected && styles.selectRouteButtonActive]} onPress={onSelect}>
+          <Ionicons name={selected ? 'checkmark-circle' : 'radio-button-off'} size={18} color={selected ? '#FFF' : Colors.primary} />
+          <Text style={[styles.selectRouteText, selected && styles.selectRouteTextActive]}>{selected ? 'Selected Route' : 'Select This Route'}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -233,6 +300,12 @@ const styles = StyleSheet.create({
   greeting: { marginBottom: 16 },
   greetingText: { fontSize: 24, fontWeight: '800', color: Colors.text },
   greetingSub: { color: Colors.textSecondary, marginTop: 4, lineHeight: 20 },
+  nicknameCard: { backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, padding: 14, marginBottom: 14 },
+  nicknameTitle: { color: Colors.text, fontWeight: '800', fontSize: 15, marginBottom: 10 },
+  nicknameRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  nicknameInput: { flex: 1, minHeight: 44, backgroundColor: Colors.background, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, color: Colors.text, paddingHorizontal: 12 },
+  nicknameButton: { minHeight: 44, borderRadius: 8, backgroundColor: Colors.primary, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
+  nicknameButtonText: { color: '#FFF', fontWeight: '800' },
   loginLink: { color: Colors.primary, fontWeight: '700', marginTop: 6, fontSize: 14 },
   searchCard: { backgroundColor: Colors.surface, borderRadius: 8, padding: 16, borderWidth: 1, borderColor: Colors.border, marginBottom: 12 },
   suggestionWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
@@ -261,6 +334,7 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 18, fontWeight: '700', color: Colors.text, marginTop: 12 },
   emptyMsg: { fontSize: 14, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' },
   routeResultCard: { backgroundColor: Colors.surface, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, padding: 12, marginBottom: 10 },
+  routeResultCardSelected: { borderColor: Colors.success, backgroundColor: Colors.success + '08' },
   routeResultHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   routeResultTitle: { fontSize: 15, fontWeight: '800', color: Colors.text },
   routeResultMeta: { fontSize: 13, color: Colors.primary, fontWeight: '800', marginTop: 4 },
@@ -276,6 +350,12 @@ const styles = StyleSheet.create({
   segmentMeta: { alignItems: 'flex-end' },
   segmentTime: { color: Colors.text, fontSize: 12, fontWeight: '800' },
   segmentFare: { color: Colors.primary, fontSize: 12, fontWeight: '800', marginTop: 3 },
+  selectRouteButton: { marginTop: 12, borderWidth: 1.5, borderColor: Colors.primary, borderRadius: 8, minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  selectRouteButtonActive: { backgroundColor: Colors.success, borderColor: Colors.success },
+  selectRouteText: { color: Colors.primary, fontWeight: '800', fontSize: 14 },
+  selectRouteTextActive: { color: '#FFF' },
+  selectedRouteBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.success + '12', borderRadius: 8, padding: 12, marginTop: 4 },
+  selectedRouteText: { flex: 1, color: Colors.text, fontSize: 13, fontWeight: '700' },
   stepRow: { flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: Colors.surface, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: Colors.border, marginBottom: 8 },
   stepTitle: { fontSize: 14, fontWeight: '800', color: Colors.text },
   stepText: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
